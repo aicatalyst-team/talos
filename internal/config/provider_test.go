@@ -20,9 +20,6 @@ func createTestProvider(t *testing.T) (*Provider, error) {
 	// Create minimal config file with required secrets and credentials issuer
 	configContent := `
 secrets:
-  default:
-    current: "test-hmac-secret-for-config-provider-32chars"
-    retired: []
   hmac:
     current: "test-hmac-secret-for-config-provider-32chars"
     retired: []
@@ -43,9 +40,6 @@ func setupProviderWithConfig(t *testing.T, configContent string) (*Provider, con
 	// Add required secrets to config content if not present
 	if configContent != "" && !strings.Contains(configContent, "secrets:") {
 		configContent = `secrets:
-  default:
-    current: "test-hmac-secret-for-config-provider-32chars"
-    retired: []
   hmac:
     current: "test-hmac-secret-for-config-provider-32chars"
     retired: []
@@ -177,6 +171,55 @@ func TestProvider_Float64(t *testing.T) {
 	require.NoError(t, provider.Set(ctx, KeyTracingSampleRate, 0.5))
 
 	assert.InDelta(t, 0.5, provider.Float64(ctx, KeyTracingSampleRate), 0.0001)
+}
+
+func TestNewProvider_RequiresSecretsAtSchemaLevel(t *testing.T) {
+	t.Parallel()
+	ctx := t.Context()
+
+	tests := []struct {
+		name   string
+		config string
+	}{
+		{
+			name: "missing secrets",
+			config: `
+credentials:
+  issuer: "https://test.talos.local"
+`,
+		},
+		{
+			name: "empty secrets.hmac.current",
+			config: `
+secrets:
+  hmac:
+    current: ""
+credentials:
+  issuer: "https://test.talos.local"
+`,
+		},
+		{
+			name: "missing secrets.hmac.current",
+			config: `
+secrets:
+  hmac:
+    retired: []
+credentials:
+  issuer: "https://test.talos.local"
+`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			configFile := filepath.Join(t.TempDir(), "config.yaml")
+			require.NoError(t, os.WriteFile(configFile, []byte(tt.config), 0o600))
+
+			_, err := NewProvider(ctx, configFile)
+			require.Error(t, err, "schema must reject config without required secrets")
+		})
+	}
 }
 
 // reviewed - @aeneasr - 2026-03-25

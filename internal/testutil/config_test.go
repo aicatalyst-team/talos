@@ -22,9 +22,7 @@ func TestNewTestProvider(t *testing.T) {
 	ctx := t.Context()
 
 	// Verify all default values are set correctly
-	assert.Equal(t, "test-hmac-secret-for-config-provider-32chars", provider.String(ctx, config.KeySecretsDefaultCurrent))
 	assert.Equal(t, "test-hmac-secret-for-config-provider-32chars", provider.String(ctx, config.KeySecretsHMACCurrent))
-	assert.Equal(t, "test-hmac-secret-for-config-provider-32chars", provider.String(ctx, config.KeySecretsPagination))
 	assert.Equal(t, "talos", provider.String(ctx, config.KeyCredentialsAPIKeysPrefixCurrent))
 	assert.Equal(t, "mc", provider.String(ctx, config.KeyCredentialsDerivedTokensMacaroonPrefixCurrent))
 	assert.Equal(t, "talos-test", provider.String(ctx, config.KeyCredentialsIssuer))
@@ -50,7 +48,7 @@ func TestNewTestProvider_WithCustomValues(t *testing.T) {
 
 	// Other defaults should still be set
 	assert.Equal(t, "talos-test", provider.String(ctx, config.KeyCredentialsIssuer))
-	assert.Equal(t, "test-hmac-secret-for-config-provider-32chars", provider.String(ctx, config.KeySecretsDefaultCurrent))
+	assert.Equal(t, "test-hmac-secret-for-config-provider-32chars", provider.String(ctx, config.KeySecretsHMACCurrent))
 }
 
 func TestNewTestProvider_ReturnsRealProvider(t *testing.T) {

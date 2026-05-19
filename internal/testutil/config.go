@@ -35,15 +35,7 @@ func NewTestProvider(tb testing.TB, opts ...configx.OptionModifier) *config.Prov
 	baseOpts := []configx.OptionModifier{
 		configx.WithValues(map[string]any{
 			"secrets": map[string]any{
-				"default": map[string]any{
-					"current": "test-hmac-secret-for-config-provider-32chars",
-					"retired": []string{},
-				},
 				"hmac": map[string]any{
-					"current": "test-hmac-secret-for-config-provider-32chars",
-					"retired": []string{},
-				},
-				"pagination": map[string]any{
 					"current": "test-hmac-secret-for-config-provider-32chars",
 					"retired": []string{},
 				},

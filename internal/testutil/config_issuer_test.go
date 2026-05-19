@@ -19,8 +19,8 @@ func TestConfigRequiresIssuer(t *testing.T) {
 	// Config without issuer should fail validation
 	configYAML := `
 secrets:
-  default:
-    current: "test-secret-minimum-32-characters-long"
+  hmac:
+    current: "test-hmac-secret-minimum-32-characters-long"
     retired: []
 `
 
@@ -45,9 +45,6 @@ func TestConfigWithIssuer(t *testing.T) {
 	// Config with issuer should succeed
 	configYAML := `
 secrets:
-  default:
-    current: "test-secret-minimum-32-characters-long"
-    retired: []
   hmac:
     current: "test-hmac-secret-minimum-32-characters-long"
     retired: []

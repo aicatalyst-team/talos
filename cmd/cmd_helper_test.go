@@ -229,14 +229,8 @@ serve:
     port: %s
 
 secrets:
-  default:
-    current: "test-secret-must-be-at-least-32-characters-long-for-hmac"
-    retired: []
   hmac:
     current: "test-hmac-secret-32-characters-long-for-hmac-sha256"
-    retired: []
-  pagination:
-    current: "test-pagination-secret-32-characters-long-for-hmac"
     retired: []
 
 credentials:

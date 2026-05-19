@@ -96,11 +96,10 @@ func newTestVerifierWithCache(ctx context.Context, t *testing.T, c cache.Cache[d
 	}
 }
 
-// configureProviderForAPIKeys sets the prefix, default secret, and HMAC secret on the provider.
+// configureProviderForAPIKeys sets the prefix and HMAC secret on the provider.
 func configureProviderForAPIKeys(ctx context.Context, t *testing.T, provider *config.Provider, hmacSecret string) {
 	t.Helper()
 	require.NoError(t, provider.Set(ctx, config.KeyCredentialsAPIKeysPrefixCurrent, "talos"))
-	require.NoError(t, provider.Set(ctx, config.KeySecretsDefaultCurrent, hmacSecret))
 	require.NoError(t, provider.Set(ctx, config.KeySecretsHMACCurrent, hmacSecret))
 }
 
@@ -197,7 +196,6 @@ func (c *testCache) buildKey(ctx context.Context, key string) string {
 func newVerifierTestProvider(t *testing.T, secret string) *config.Provider {
 	t.Helper()
 	return testutil.NewTestProvider(t, configx.WithValues(map[string]any{
-		config.KeySecretsDefaultCurrent.String():                         secret,
 		config.KeySecretsHMACCurrent.String():                            secret,
 		config.KeyCredentialsAPIKeysPrefixCurrent.String():               "talos",
 		config.KeyCredentialsIssuer.String():                             "talos-service",
@@ -220,7 +218,6 @@ func newDeterministicEdDSAKeyService(t *testing.T) (*crypto.KeyService, ed25519.
 
 	jwksURL := testutil.TestSigningKeyJWKSURLWithKey(t, privateKey, keyID)
 	provider := testutil.NewTestProvider(t, configx.WithValues(map[string]any{
-		config.KeySecretsDefaultCurrent.String():                         "test-secret-123-must-be-32chars!",
 		config.KeySecretsHMACCurrent.String():                            "test-secret-123-must-be-32chars!",
 		config.KeyCredentialsAPIKeysPrefixCurrent.String():               "talos",
 		config.KeyCredentialsIssuer.String():                             "talos-service",

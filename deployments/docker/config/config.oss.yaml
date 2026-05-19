@@ -66,14 +66,8 @@ log:
 
 # Secrets (CHANGE THESE IN PRODUCTION!)
 secrets:
-  default:
-    current: "docker-compose-dev-secret-minimum-32-chars-long"
-    retired: []
   hmac:
     current: "docker-compose-hmac-secret-minimum-32-chars-long"
-    retired: []
-  pagination:
-    current: "docker-compose-pagination-secret-32-chars"
     retired: []
 
 # Tracing - exports spans to local Jaeger from docker-compose.oss.yaml

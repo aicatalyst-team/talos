@@ -634,58 +634,15 @@
     },
     "secrets": {
       "type": "object",
-      "description": "Centralized secrets management. All secrets should be configured here instead of being generated per instance. Component-specific secrets override the default secret.",
+      "description": "Centralized secrets management. The HMAC secret seeds API key checksums, the macaroon root key, and the pagination cursor encryption key (via domain-separated derivation).",
       "properties": {
-        "default": {
-          "type": "object",
-          "description": "Default secret configuration with rotation support (fallback for all components)",
-          "properties": {
-            "current": {
-              "type": "string",
-              "description": "Current default secret for all components without specific overrides",
-              "minLength": 32
-            },
-            "retired": {
-              "type": "array",
-              "description": "Retired default secrets that remain valid for verification during rotation",
-              "items": {
-                "type": "string",
-                "minLength": 32
-              },
-              "default": []
-            }
-          },
-          "required": ["current"],
-          "additionalProperties": false
-        },
-        "pagination": {
-          "type": "object",
-          "description": "Override secret for pagination token encryption (hyrum tokens). If not set, uses secrets.default. Must be at least 32 characters.",
-          "properties": {
-            "current": {
-              "type": "string",
-              "description": "Secret used to sign and encrypt pagination tokens. Must be at least 32 characters.",
-              "minLength": 32
-            },
-            "retired": {
-              "type": "array",
-              "description": "List of retired pagination secrets that should remain valid for decoding legacy page tokens during secret rotation.",
-              "items": {
-                "type": "string",
-                "minLength": 32
-              },
-              "default": []
-            }
-          },
-          "additionalProperties": false
-        },
         "hmac": {
           "type": "object",
-          "description": "HMAC secret configuration with rotation support",
+          "description": "HMAC secret configuration with rotation support. Also seeds the pagination cursor encryption key.",
           "properties": {
             "current": {
               "type": "string",
-              "description": "Current HMAC secret for new key generation and checksum verification",
+              "description": "Current HMAC secret for new key generation and checksum verification. Must be at least 32 characters.",
               "minLength": 32
             },
             "retired": {
@@ -698,11 +655,12 @@
               "default": []
             }
           },
+          "required": ["current"],
           "additionalProperties": false
         }
       },
       "additionalProperties": false,
-      "required": ["default"]
+      "required": ["hmac"]
     },
     "quota": {
       "type": "object",

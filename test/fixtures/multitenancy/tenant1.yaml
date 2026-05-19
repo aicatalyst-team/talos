@@ -12,12 +12,6 @@ credentials:
           - "file://./test/fixtures/multitenancy/signing-keys/tenant1-ed25519.jwks.json"
 
 secrets:
-  default:
-    current: "tenant1-secret-minimum-32-chars-long-aaaaaaaaaaa"
-    retired: []
   hmac:
     current: "tenant1-hmac-secret-32-chars-bbbbbbbbbbb"
-    retired: []
-  pagination:
-    current: "tenant1-pagination-secret-32chars-ccccccc"
     retired: []

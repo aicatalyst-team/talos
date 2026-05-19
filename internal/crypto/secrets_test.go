@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/config"
 	"github.com/ory-corp/talos/internal/crypto"
 	"github.com/ory-corp/talos/internal/testutil"
 
@@ -22,10 +21,6 @@ func TestHMACSecretsForVerification(t *testing.T) {
 
 		provider := testutil.NewTestProvider(t, configx.WithValues(map[string]any{
 			"secrets": map[string]any{
-				"default": map[string]any{
-					"current": "default-secret-32chars-min-1234567890",
-					"retired": []string{},
-				},
 				"hmac": map[string]any{
 					"current": "hmac-secret-32chars-minimum-12345678901234",
 					"retired": []string{"old-hmac-secret-32chars-1234567890123456"},
@@ -47,10 +42,6 @@ func TestHMACSecretsForVerification(t *testing.T) {
 
 		provider := testutil.NewTestProvider(t, configx.WithValues(map[string]any{
 			"secrets": map[string]any{
-				"default": map[string]any{
-					"current": "default-secret-32chars-min-1234567890",
-					"retired": []string{},
-				},
 				"hmac": map[string]any{
 					"current": "hmac-secret-32chars-minimum-12345678901234",
 					"retired": []string{},
@@ -66,29 +57,11 @@ func TestHMACSecretsForVerification(t *testing.T) {
 		}, secrets)
 	})
 
-	t.Run("returns error when HMAC not configured", func(t *testing.T) {
-		t.Parallel()
-
-		// Create provider directly without testkit base defaults, so that the
-		// HMAC section is truly absent.
-		ctx := context.Background()
-		provider, err := config.NewProviderWithOptions(ctx, configx.WithValues(map[string]any{
-			"credentials": map[string]any{
-				"issuer": "talos-test",
-			},
-			"secrets": map[string]any{
-				"default": map[string]any{
-					"current": "default-secret-32chars-min-1234567890",
-					"retired": []string{"old-default-secret-32chars-1234567890"},
-				},
-			},
-		}))
-		require.NoError(t, err)
-
-		_, err = crypto.HMACSecretsForVerification(ctx, provider)
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "project has no HMAC key configured")
-	})
+	// Note: the "HMAC not configured" path is unreachable in production because
+	// the config schema requires secrets.hmac.current. Schema-level enforcement
+	// is covered by TestNewProvider_RequiresSecretsAtSchemaLevel in
+	// internal/config. The defensive runtime guard here remains as belt-and-
+	// suspenders.
 }
 
 func TestHMACSecretForSigning(t *testing.T) {
@@ -99,9 +72,6 @@ func TestHMACSecretForSigning(t *testing.T) {
 
 		provider := testutil.NewTestProvider(t, configx.WithValues(map[string]any{
 			"secrets": map[string]any{
-				"default": map[string]any{
-					"current": "default-secret-32chars-min-1234567890",
-				},
 				"hmac": map[string]any{
 					"current": "hmac-secret-32chars-minimum-12345678901234",
 				},
@@ -114,84 +84,8 @@ func TestHMACSecretForSigning(t *testing.T) {
 		assert.Equal(t, "hmac-secret-32chars-minimum-12345678901234", secret)
 	})
 
-	t.Run("returns error when HMAC not configured", func(t *testing.T) {
-		t.Parallel()
-
-		// Create provider directly without testkit base defaults, so that the
-		// HMAC section is truly absent.
-		ctx := context.Background()
-		provider, err := config.NewProviderWithOptions(ctx, configx.WithValues(map[string]any{
-			"credentials": map[string]any{
-				"issuer": "talos-test",
-			},
-			"secrets": map[string]any{
-				"default": map[string]any{
-					"current": "default-secret-32chars-min-1234567890",
-				},
-			},
-		}))
-		require.NoError(t, err)
-
-		_, err = crypto.HMACSecretForSigning(ctx, provider)
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "project has no HMAC key configured")
-	})
-}
-
-func TestDefaultSecrets(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name     string
-		config   map[string]any
-		expected []string
-	}{
-		{
-			name: "default secret with retired",
-			config: map[string]any{
-				"secrets": map[string]any{
-					"default": map[string]any{
-						"current": "default-secret-32chars-min-1234567890",
-						"retired": []string{
-							"old-default-secret-32chars-1234567890",
-							"very-old-default-secret-32chars-123456",
-						},
-					},
-				},
-			},
-			expected: []string{
-				"default-secret-32chars-min-1234567890",
-				"old-default-secret-32chars-1234567890",
-				"very-old-default-secret-32chars-123456",
-			},
-		},
-		{
-			name: "default secret without retired",
-			config: map[string]any{
-				"secrets": map[string]any{
-					"default": map[string]any{
-						"current": "default-secret-32chars-min-1234567890",
-						"retired": []string{},
-					},
-				},
-			},
-			expected: []string{
-				"default-secret-32chars-min-1234567890",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			provider := testutil.NewTestProvider(t, configx.WithValues(tt.config))
-			ctx := context.Background()
-
-			secrets := crypto.DefaultSecrets(ctx, provider)
-			assert.Equal(t, tt.expected, secrets)
-		})
-	}
+	// Note: the "HMAC not configured" path is unreachable in production because
+	// the config schema requires secrets.hmac.current.
 }
 
 // reviewed - @aeneasr - 2026-03-26

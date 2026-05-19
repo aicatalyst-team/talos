@@ -9,7 +9,7 @@ title: Docker
 ```bash
 docker run -d \
   -p 4420:4420 \
-  -e TALOS_SECRETS_DEFAULT_CURRENT="my-secret-must-be-at-least-32-characters-long" \
+  -e TALOS_SECRETS_HMAC_CURRENT="my-hmac-secret-must-be-at-least-32-characters" \
   -e TALOS_CREDENTIALS_ISSUER="http://localhost:4420" \
   -e TALOS_DB_DSN="sqlite:///data/talos.db" \
   -v talos-data:/data \

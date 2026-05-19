@@ -58,7 +58,7 @@ spec:
                 secretKeyRef:
                   name: talos-secrets
                   key: dsn
-            - name: TALOS_SECRETS_DEFAULT_CURRENT
+            - name: TALOS_SECRETS_HMAC_CURRENT
               valueFrom:
                 secretKeyRef:
                   name: talos-secrets

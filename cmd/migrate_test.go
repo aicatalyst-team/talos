@@ -435,9 +435,6 @@ func TestMigrateCommands_DatabaseFlag(t *testing.T) {
 // The secrets and credentials fields are required by the config schema.
 const minimalConfigWithDSN = `
 secrets:
-  default:
-    current: "test-hmac-secret-for-migrate-test-32chars"
-    retired: []
   hmac:
     current: "test-hmac-secret-for-migrate-test-32chars"
     retired: []
@@ -450,9 +447,6 @@ db:
 // minimalConfigWithoutDSN is a valid config file missing the db.dsn entry.
 const minimalConfigWithoutDSN = `
 secrets:
-  default:
-    current: "test-hmac-secret-for-migrate-test-32chars"
-    retired: []
   hmac:
     current: "test-hmac-secret-for-migrate-test-32chars"
     retired: []

@@ -17,9 +17,10 @@ title: Security hardening
 
 ## Secrets
 
-- **Use strong HMAC secrets** of at least 32 characters, generated with a cryptographically secure
-  random generator.
-- **Use separate HMAC secrets** (`secrets.hmac.current`) rather than relying on the default secret.
+- **Use a strong HMAC secret** of at least 32 characters, generated with a cryptographically secure
+  random generator. Talos derives the pagination cursor encryption key from this same secret, so
+  there is only one secret to manage.
+- **Configure `secrets.hmac.current`**. This is the single required secret family.
 - **Rotate secrets regularly** using the retired array. Verification tries current + retired secrets
   automatically.
 - **Never commit secrets** to version control. Use environment variables or a secrets manager.

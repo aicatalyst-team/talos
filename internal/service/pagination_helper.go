@@ -2,14 +2,12 @@ package service
 
 import (
 	"context"
-	"slices"
 
 	"github.com/cockroachdb/errors"
 
 	"github.com/ory-corp/talos/internal/contextx"
-
-	talosconfig "github.com/ory-corp/talos/internal/config"
 	"github.com/ory-corp/talos/internal/crypto"
+
 	"github.com/ory-corp/talos/internal/errdef"
 	"github.com/ory-corp/talos/internal/pagination"
 	"github.com/ory-corp/talos/internal/service/validation"
@@ -53,11 +51,13 @@ func (p *paginationHelper) prepareListQuery(ctx context.Context, filter string, 
 
 	pageSize := pagination.ValidatePageSize(reqPageSize)
 
-	secrets := paginationSecrets(ctx, p.provider)
-
 	var cursorKeyID string
 	if pageToken != "" {
-		cursor, err := pagination.DecodeCursor(secrets, pageToken)
+		keys, err := crypto.PaginationKeysForVerification(ctx, p.provider)
+		if err != nil {
+			return listQueryParams{}, errdef.InternalError("derive pagination keys").WithWrap(errors.WithStack(err))
+		}
+		cursor, err := pagination.DecodeCursor(keys, pageToken)
 		if err != nil {
 			return listQueryParams{}, errdef.BadRequest("invalid page token").WithWrap(errors.WithStack(err))
 		}
@@ -81,21 +81,16 @@ func (p *paginationHelper) nextPageToken(ctx context.Context, originalCount int,
 	if originalCount <= int(pageSize) {
 		return "", nil
 	}
-	secrets := paginationSecrets(ctx, p.provider)
-	token, err := pagination.EncodeCursor(secrets[0], keyID, contextx.NetworkIDFromContext(ctx).String())
+	secret, err := crypto.HMACSecretForSigning(ctx, p.provider)
+	if err != nil {
+		return "", errdef.InternalError("derive pagination key").WithWrap(errors.WithStack(err))
+	}
+	key := crypto.DerivePaginationKey(secret)
+	token, err := pagination.EncodeCursor(key, keyID, contextx.NetworkIDFromContext(ctx).String())
 	if err != nil {
 		return "", errdef.InternalError("encode pagination cursor").WithWrap(errors.WithStack(err))
 	}
 	return token, nil
-}
-
-// paginationSecrets returns the current pagination secret followed by any retired secrets.
-func paginationSecrets(ctx context.Context, provider ConfigProvider) []string {
-	if current := provider.String(ctx, talosconfig.KeySecretsPagination); current != "" {
-		retired := provider.Strings(ctx, talosconfig.KeySecretsPaginationRetired)
-		return slices.Concat([]string{current}, retired)
-	}
-	return crypto.DefaultSecrets(ctx, provider)
 }
 
 // reviewed - @aeneasr - 2026-03-26

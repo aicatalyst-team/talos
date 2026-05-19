@@ -97,17 +97,9 @@ var (
 	// KeyTracingSampleRate is the trace sampling rate.
 	KeyTracingSampleRate = Key{s: "tracing.sample_rate"}
 
-	// KeySecretsDefaultCurrent is the current default secret for generation.
-	KeySecretsDefaultCurrent = Key{s: "secrets.default.current"}
-	// KeySecretsDefaultRetired lists retired default secrets for verification during rotation.
-	KeySecretsDefaultRetired = Key{s: "secrets.default.retired"}
-
-	// KeySecretsPagination is the pagination token signing secret.
-	KeySecretsPagination = Key{s: "secrets.pagination.current"}
-	// KeySecretsPaginationRetired lists retired pagination secrets for rotation.
-	KeySecretsPaginationRetired = Key{s: "secrets.pagination.retired"}
-
 	// KeySecretsHMACCurrent is the current HMAC secret for new key generation.
+	// It also seeds the pagination cursor encryption key via
+	// crypto.DerivePaginationKey.
 	KeySecretsHMACCurrent = Key{s: "secrets.hmac.current"}
 	// KeySecretsHMACRetired lists retired HMAC secrets for verification during rotation.
 	KeySecretsHMACRetired = Key{s: "secrets.hmac.retired"}

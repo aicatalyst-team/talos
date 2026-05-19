@@ -79,9 +79,7 @@ func createMockProviderForTestServer(t *testing.T, extraOpts ...configx.OptionMo
 	keyURL := testutil.TestSigningKeyJWKSURL(t)
 
 	opts := append([]configx.OptionModifier{configx.WithValues(map[string]any{
-		config.KeySecretsDefaultCurrent.String():                         "test-hmac-secret-for-api-key-checksum-validation-32chars",
 		config.KeySecretsHMACCurrent.String():                            "test-hmac-secret-for-api-key-checksum-validation-32chars",
-		config.KeySecretsPagination.String():                             "test-pagination-secret-must-be-at-least-32-characters-long",
 		config.KeyCredentialsAPIKeysDefaultTTL.String():                  "24h",
 		config.KeyCredentialsAPIKeysMaxTTL.String():                      "8760h", // 365*24*time.Hour
 		config.KeyCacheTTL.String():                                      "5m",

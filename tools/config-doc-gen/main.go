@@ -116,8 +116,8 @@ At minimum, these must be set (via env var or config file):
 
 | Variable                         | Description                                       |
 | -------------------------------- | ------------------------------------------------- |
-| ` + "`TALOS_SECRETS_DEFAULT_CURRENT`" + ` | Default secret for HMAC operations (min 32 chars) |
-| ` + "`TALOS_CREDENTIALS_ISSUER`" + `      | Token issuer (` + "`iss`" + ` claim) for derived tokens     |`)
+| ` + "`TALOS_SECRETS_HMAC_CURRENT`" + `       | HMAC secret (also derives the pagination cursor key). Minimum 32 characters. |
+| ` + "`TALOS_CREDENTIALS_ISSUER`" + `        | Token issuer (` + "`iss`" + ` claim) for derived tokens.                              |`)
 }
 
 func printSection(prefix string, s Schema, depth int) {

@@ -1,6 +1,7 @@
 package pagination
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
 	"strings"
 	"testing"
@@ -10,10 +11,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const (
-	testNID    = "11111111-1111-1111-1111-111111111111"
-	testSecret = "test-secret-for-pagination-encryption-must-be-at-least-32-chars"
-)
+const testNID = "11111111-1111-1111-1111-111111111111"
+
+// testKey derives a deterministic [32]byte key from an arbitrary label so
+// tests stay readable without sprinkling raw byte arrays everywhere.
+func testKey(label string) [32]byte {
+	return sha256.Sum256([]byte(label))
+}
+
+func testCursorKey() [32]byte { return testKey("test-pagination-key") }
+func altCursorKey() [32]byte  { return testKey("alternate-pagination-key") }
 
 func TestEncodeDecodeCursor(t *testing.T) {
 	t.Parallel()
@@ -42,7 +49,7 @@ func TestEncodeDecodeCursor(t *testing.T) {
 			t.Parallel()
 
 			// Encode
-			token, err := EncodeCursor(testSecret, tt.id, testNID)
+			token, err := EncodeCursor(testCursorKey(), tt.id, testNID)
 			if tt.wantErr {
 				require.Error(t, err)
 				return
@@ -57,7 +64,7 @@ func TestEncodeDecodeCursor(t *testing.T) {
 			assert.NotEmpty(t, token)
 
 			// Decode
-			cursor, err := DecodeCursor([]string{testSecret}, token)
+			cursor, err := DecodeCursor([][32]byte{testCursorKey()}, token)
 			require.NoError(t, err)
 			require.NotNil(t, cursor)
 
@@ -102,7 +109,7 @@ func TestDecodeCursor_Invalid(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			cursor, err := DecodeCursor([]string{testSecret}, tt.token)
+			cursor, err := DecodeCursor([][32]byte{testCursorKey()}, tt.token)
 			if tt.wantError {
 				assert.Error(t, err)
 				return
@@ -166,12 +173,12 @@ func TestCursorRoundTrip(t *testing.T) {
 	id := "01HQZX9VYQKJB8XQZQXQZQXQXQ"
 
 	// Encode
-	token, err := EncodeCursor(testSecret, id, testNID)
+	token, err := EncodeCursor(testCursorKey(), id, testNID)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
 	// Decode
-	cursor, err := DecodeCursor([]string{testSecret}, token)
+	cursor, err := DecodeCursor([][32]byte{testCursorKey()}, token)
 	require.NoError(t, err)
 	require.NotNil(t, cursor)
 
@@ -186,93 +193,75 @@ func TestTokensAreOpaque(t *testing.T) {
 	// Generate two tokens with the same data
 	id := "01HQZX9VYQKJB8XQZQXQZQXQXQ"
 
-	token1, err := EncodeCursor(testSecret, id, testNID)
+	token1, err := EncodeCursor(testCursorKey(), id, testNID)
 	require.NoError(t, err)
 
-	token2, err := EncodeCursor(testSecret, id, testNID)
+	token2, err := EncodeCursor(testCursorKey(), id, testNID)
 	require.NoError(t, err)
 
 	// Tokens should be different due to random nonce in keysetpagination
 	assert.NotEqual(t, token1, token2, "tokens with same data should be different due to random nonce")
 
 	// But both should decode to the same values
-	cursor1, err := DecodeCursor([]string{testSecret}, token1)
+	cursor1, err := DecodeCursor([][32]byte{testCursorKey()}, token1)
 	require.NoError(t, err)
 
-	cursor2, err := DecodeCursor([]string{testSecret}, token2)
+	cursor2, err := DecodeCursor([][32]byte{testCursorKey()}, token2)
 	require.NoError(t, err)
 
 	assert.Equal(t, cursor1.ID, cursor2.ID)
 	assert.Equal(t, cursor1.NID, cursor2.NID)
 }
 
-func TestDifferentSecrets(t *testing.T) {
+func TestDifferentKeys(t *testing.T) {
 	t.Parallel()
 
-	secret1 := "test-secret-must-be-at-least-32-characters-long"
-	secret2 := "another-test-secret-must-be-at-least-32-characters"
 	id := "test-id"
 
-	// Encode with secret1
-	token, err := EncodeCursor(secret1, id, testNID)
+	// Encode with key1
+	token, err := EncodeCursor(testCursorKey(), id, testNID)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
-	// Decode with secret1 works
-	cursor, err := DecodeCursor([]string{secret1}, token)
+	// Decode with key1 works
+	cursor, err := DecodeCursor([][32]byte{testCursorKey()}, token)
 	require.NoError(t, err)
 	require.NotNil(t, cursor)
 	assert.Equal(t, id, cursor.ID)
 
-	// Encode with secret2 produces a decodable token
-	token2, err := EncodeCursor(secret2, id, testNID)
+	// Encode with key2 produces a decodable token
+	token2, err := EncodeCursor(altCursorKey(), id, testNID)
 	require.NoError(t, err)
 
-	cursor2, err := DecodeCursor([]string{secret2}, token2)
+	cursor2, err := DecodeCursor([][32]byte{altCursorKey()}, token2)
 	require.NoError(t, err)
 	assert.Equal(t, id, cursor2.ID)
 
-	// Decoding secret1's token with secret2 fails
-	_, err = DecodeCursor([]string{secret2}, token)
-	assert.Error(t, err, "token from secret1 should not decode with secret2")
-}
-
-func TestEncodeCursor_SecretTooShort(t *testing.T) {
-	t.Parallel()
-
-	_, err := EncodeCursor("short", "test-id", testNID)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "at least 32 characters")
-}
-
-func TestEncodeCursor_EmptySecret(t *testing.T) {
-	t.Parallel()
-
-	_, err := EncodeCursor("", "test-id", testNID)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "at least 32 characters")
+	// Decoding key1's token with key2 fails
+	_, err = DecodeCursor([][32]byte{altCursorKey()}, token)
+	assert.Error(t, err, "token from key1 should not decode with key2")
 }
 
 func TestEncodingWithoutNetworkID(t *testing.T) {
 	t.Parallel()
 
-	_, err := EncodeCursor(testSecret, "test-id", "")
+	_, err := EncodeCursor(testCursorKey(), "test-id", "")
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "network ID not configured")
 }
 
-func TestDecodingWithoutSecrets(t *testing.T) {
+func TestDecodingWithoutKeys(t *testing.T) {
 	t.Parallel()
 
-	// First encode with a secret
+	// First encode with a key
 	id := "test-id"
-	token, err := EncodeCursor(testSecret, id, testNID)
+	token, err := EncodeCursor(testCursorKey(), id, testNID)
 	require.NoError(t, err)
 
-	// Try to decode without any secrets
-	_, err = DecodeCursor([]string{}, token)
+	// Try to decode without any keys
+	_, err = DecodeCursor([][32]byte{}, token)
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "encryption secrets not configured")
+	assert.Contains(t, err.Error(), "encryption keys not configured")
 }
 
 func TestEncodeDecodeCursor_NilUUID(t *testing.T) {
@@ -283,11 +272,11 @@ func TestEncodeDecodeCursor_NilUUID(t *testing.T) {
 	// non-empty string and must work for OSS pagination.
 	const ossNID = "00000000-0000-0000-0000-000000000000"
 
-	token, err := EncodeCursor(testSecret, "item-1", ossNID)
+	token, err := EncodeCursor(testCursorKey(), "item-1", ossNID)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
-	cursor, err := DecodeCursor([]string{testSecret}, token)
+	cursor, err := DecodeCursor([][32]byte{testCursorKey()}, token)
 	require.NoError(t, err)
 	require.NotNil(t, cursor)
 	assert.Equal(t, "item-1", cursor.ID)
@@ -297,69 +286,69 @@ func TestEncodeDecodeCursor_NilUUID(t *testing.T) {
 func TestDecodeCursorWithRetry_KeyRotation(t *testing.T) {
 	t.Parallel()
 
-	// Secret rotation scenario:
-	// - oldSecret was used to create existing tokens
-	// - newSecret is the current secret
-	// - During grace period, both secrets should work
-	oldSecret := "old-pagination-secret-at-least-32-characters-long"
-	newSecret := "new-pagination-secret-at-least-32-characters-long"
+	// Key rotation scenario:
+	// - oldKey was used to create existing tokens
+	// - newKey is the current key
+	// - During grace period, both keys should work
+	oldKey := testKey("old-pagination-key")
+	newKey := testKey("new-pagination-key")
 
-	// Create token with OLD secret (simulates token created before rotation)
-	tokenFromOldSecret, err := EncodeCursor(oldSecret, "item-123", testNID)
+	// Create token with OLD key (simulates token created before rotation)
+	tokenFromOldKey, err := EncodeCursor(oldKey, "item-123", testNID)
 	require.NoError(t, err)
-	require.NotEmpty(t, tokenFromOldSecret)
+	require.NotEmpty(t, tokenFromOldKey)
 
-	// Create token with NEW secret (simulates token created after rotation)
-	tokenFromNewSecret, err := EncodeCursor(newSecret, "item-456", testNID)
+	// Create token with NEW key (simulates token created after rotation)
+	tokenFromNewKey, err := EncodeCursor(newKey, "item-456", testNID)
 	require.NoError(t, err)
-	require.NotEmpty(t, tokenFromNewSecret)
+	require.NotEmpty(t, tokenFromNewKey)
 
-	t.Run("decode with only new secret fails for old tokens", func(t *testing.T) {
-		cursor, err := DecodeCursor([]string{newSecret}, tokenFromOldSecret)
+	t.Run("decode with only new key fails for old tokens", func(t *testing.T) {
+		cursor, err := DecodeCursor([][32]byte{newKey}, tokenFromOldKey)
 		require.Error(t, err)
 		assert.Nil(t, cursor)
 	})
 
-	t.Run("decode with secret rotation succeeds for old tokens", func(t *testing.T) {
-		// With secret rotation (new secret first, then old secret), old tokens work
-		secrets := []string{newSecret, oldSecret}
-		cursor, err := DecodeCursor(secrets, tokenFromOldSecret)
+	t.Run("decode with key rotation succeeds for old tokens", func(t *testing.T) {
+		// With key rotation (new key first, then old key), old tokens work.
+		keys := [][32]byte{newKey, oldKey}
+		cursor, err := DecodeCursor(keys, tokenFromOldKey)
 		require.NoError(t, err)
 		require.NotNil(t, cursor)
 		assert.Equal(t, "item-123", cursor.ID)
 	})
 
-	t.Run("decode with secret rotation succeeds for new tokens", func(t *testing.T) {
-		// New tokens are decoded with the first (current) secret
-		secrets := []string{newSecret, oldSecret}
-		cursor, err := DecodeCursor(secrets, tokenFromNewSecret)
+	t.Run("decode with key rotation succeeds for new tokens", func(t *testing.T) {
+		// New tokens are decoded with the first (current) key.
+		keys := [][32]byte{newKey, oldKey}
+		cursor, err := DecodeCursor(keys, tokenFromNewKey)
 		require.NoError(t, err)
 		require.NotNil(t, cursor)
 		assert.Equal(t, "item-456", cursor.ID)
 	})
 
-	t.Run("encode always uses first secret", func(t *testing.T) {
-		// Encoding should always use the first (current) secret
-		secrets := []string{newSecret, oldSecret}
-		token, err := EncodeCursor(secrets[0], "item-789", testNID)
+	t.Run("encode always uses first key", func(t *testing.T) {
+		// Encoding should always use the first (current) key.
+		keys := [][32]byte{newKey, oldKey}
+		token, err := EncodeCursor(keys[0], "item-789", testNID)
 		require.NoError(t, err)
 
-		// Verify it was encoded with the new secret
-		cursor, err := DecodeCursor([]string{newSecret}, token)
+		// Verify it was encoded with the new key.
+		cursor, err := DecodeCursor([][32]byte{newKey}, token)
 		require.NoError(t, err)
 		assert.Equal(t, "item-789", cursor.ID)
 	})
 
 	t.Run("empty token returns nil cursor", func(t *testing.T) {
-		secrets := []string{newSecret, oldSecret}
-		cursor, err := DecodeCursor(secrets, "")
+		keys := [][32]byte{newKey, oldKey}
+		cursor, err := DecodeCursor(keys, "")
 		require.NoError(t, err)
 		assert.Nil(t, cursor)
 	})
 
-	t.Run("invalid token fails with all secrets", func(t *testing.T) {
-		secrets := []string{newSecret, oldSecret}
-		cursor, err := DecodeCursor(secrets, "invalid-token-data")
+	t.Run("invalid token fails with all keys", func(t *testing.T) {
+		keys := [][32]byte{newKey, oldKey}
+		cursor, err := DecodeCursor(keys, "invalid-token-data")
 		require.Error(t, err)
 		assert.Nil(t, cursor)
 	})
@@ -368,23 +357,11 @@ func TestDecodeCursorWithRetry_KeyRotation(t *testing.T) {
 func TestDecodeCursorWithRetry_EdgeCases(t *testing.T) {
 	t.Parallel()
 
-	t.Run("no secrets provided", func(t *testing.T) {
-		cursor, err := DecodeCursor([]string{}, "some-token")
+	t.Run("no keys provided", func(t *testing.T) {
+		cursor, err := DecodeCursor([][32]byte{}, "some-token")
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "not configured")
 		assert.Nil(t, cursor)
-	})
-
-	t.Run("invalid secrets in slice are skipped", func(t *testing.T) {
-		token, err := EncodeCursor(testSecret, "test-id", testNID)
-		require.NoError(t, err)
-
-		// Mix of invalid (too short) and valid secrets
-		secrets := []string{"short", testSecret, "x"}
-		cursor, err := DecodeCursor(secrets, token)
-		require.NoError(t, err)
-		require.NotNil(t, cursor)
-		assert.Equal(t, "test-id", cursor.ID)
 	})
 }
 
@@ -458,7 +435,7 @@ func TestDecodeCursor_Adversarial(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			cursor, err := DecodeCursor([]string{testSecret}, tt.token)
+			cursor, err := DecodeCursor([][32]byte{testCursorKey()}, tt.token)
 			// Empty token is valid (returns nil cursor, no error).
 			// All other adversarial inputs must either error or return nil.
 			if tt.token == "" {
@@ -473,17 +450,17 @@ func TestDecodeCursor_Adversarial(t *testing.T) {
 	}
 }
 
-// TestDecodeCursor_WrongSecretCannotForge verifies that a cursor encoded with
-// one secret cannot be decoded with a different secret, preventing cursor
-// forgery by external parties who do not know the server secret.
-func TestDecodeCursor_WrongSecretCannotForge(t *testing.T) {
+// TestDecodeCursor_WrongKeyCannotForge verifies that a cursor encoded with
+// one key cannot be decoded with a different key, preventing cursor forgery
+// by external parties who do not know the server's derived key.
+func TestDecodeCursor_WrongKeyCannotForge(t *testing.T) {
 	t.Parallel()
 
-	attackerSecret := "attacker-controlled-secret-at-least-32-chars-long"
-	forgedToken, err := EncodeCursor(attackerSecret, "'; DROP TABLE keys; --", testNID)
+	attackerKey := testKey("attacker-controlled-key")
+	forgedToken, err := EncodeCursor(attackerKey, "'; DROP TABLE keys; --", testNID)
 	require.NoError(t, err)
 
-	cursor, err := DecodeCursor([]string{testSecret}, forgedToken)
+	cursor, err := DecodeCursor([][32]byte{testCursorKey()}, forgedToken)
 	require.Error(t, err, "forged token must be rejected")
 	assert.Nil(t, cursor)
 }
@@ -492,7 +469,7 @@ func TestDecodeCursor_WrongSecretCannotForge(t *testing.T) {
 // It must never panic, and must always return either a valid cursor or an error.
 func FuzzDecodeCursor(f *testing.F) {
 	// Seed with a valid token so the fuzzer has realistic structure to mutate.
-	validToken, err := EncodeCursor(testSecret, "seed-id", testNID)
+	validToken, err := EncodeCursor(testCursorKey(), "seed-id", testNID)
 	require.NoError(f, err)
 
 	f.Add(validToken)
@@ -502,7 +479,7 @@ func FuzzDecodeCursor(f *testing.F) {
 	f.Add("AAAA\x00\x00\x00\x00BBBB")
 
 	f.Fuzz(func(t *testing.T, token string) {
-		cursor, err := DecodeCursor([]string{testSecret}, token)
+		cursor, err := DecodeCursor([][32]byte{testCursorKey()}, token)
 		if err != nil {
 			// Error path — cursor must be nil.
 			assert.Nil(t, cursor, "on error, cursor must be nil")
@@ -539,7 +516,7 @@ func FuzzCursorRoundTrip(f *testing.F) {
 			return
 		}
 
-		token, err := EncodeCursor(testSecret, id, nid)
+		token, err := EncodeCursor(testCursorKey(), id, nid)
 		require.NoError(t, err)
 
 		if id == "" {
@@ -549,7 +526,7 @@ func FuzzCursorRoundTrip(f *testing.F) {
 
 		require.NotEmpty(t, token)
 
-		cursor, err := DecodeCursor([]string{testSecret}, token)
+		cursor, err := DecodeCursor([][32]byte{testCursorKey()}, token)
 		require.NoError(t, err)
 		require.NotNil(t, cursor)
 		assert.Equal(t, id, cursor.ID, "round-trip ID mismatch")

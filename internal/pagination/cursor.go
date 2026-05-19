@@ -2,8 +2,6 @@
 package pagination
 
 import (
-	"crypto/sha256"
-
 	"github.com/cockroachdb/errors"
 
 	keysetpagination "github.com/ory/x/pagination/keysetpagination_v2"
@@ -19,20 +17,10 @@ type Cursor struct {
 	NID string `json:"nid"`
 }
 
-// deriveKey derives a 32-byte encryption key from a secret string using SHA-256.
-func deriveKey(secret string) (*[32]byte, error) {
-	if len(secret) < 32 {
-		return nil, errors.Errorf("secret must be at least 32 characters, got %d", len(secret))
-	}
-	hash := sha256.Sum256([]byte(secret))
-	return &hash, nil
-}
-
 // EncodeCursor encrypts an (id, nid) pair into an opaque page token that
 // callers can pass back to resume a list. Returns an empty token when id is
-// empty (terminal page) and an error when nid is empty or the secret is too
-// short for key derivation.
-func EncodeCursor(secret string, id, nid string) (string, error) {
+// empty (terminal page) and an error when nid is empty.
+func EncodeCursor(key [32]byte, id, nid string) (string, error) {
 	if id == "" {
 		return "", nil
 	}
@@ -40,41 +28,24 @@ func EncodeCursor(secret string, id, nid string) (string, error) {
 		return "", errors.Errorf("pagination network ID not configured")
 	}
 
-	key, err := deriveKey(secret)
-	if err != nil {
-		return "", errors.Wrap(err, "pagination encryption key")
-	}
-
 	token := keysetpagination.NewPageToken(
 		keysetpagination.Column{Name: "id", Value: id},
 		keysetpagination.Column{Name: "nid", Value: nid},
 	)
-	return token.Encrypt([][32]byte{*key}), nil
+	return token.Encrypt([][32]byte{key}), nil
 }
 
-// DecodeCursor decrypts a page token by trying each secret in order, which
-// supports graceful key rotation: put the current secret first and keep
-// retired secrets until their tokens age out. Returns (nil, nil) for an empty
-// token, the decoded cursor if any secret succeeds, or an error if all fail.
-func DecodeCursor(secrets []string, pageToken string) (*Cursor, error) {
+// DecodeCursor decrypts a page token by trying each key in order, which
+// supports graceful key rotation: put the current key first and keep
+// retired keys until their tokens age out. Returns (nil, nil) for an empty
+// token, the decoded cursor if any key succeeds, or an error if all fail.
+func DecodeCursor(keys [][32]byte, pageToken string) (*Cursor, error) {
 	if pageToken == "" {
 		return nil, nil
 	}
 
-	if len(secrets) == 0 {
-		return nil, errors.Errorf("pagination encryption secrets not configured")
-	}
-
-	keys := make([][32]byte, 0, len(secrets))
-	for _, s := range secrets {
-		k, err := deriveKey(s)
-		if err != nil {
-			continue
-		}
-		keys = append(keys, *k)
-	}
 	if len(keys) == 0 {
-		return nil, errors.Errorf("no valid pagination secrets configured")
+		return nil, errors.Errorf("pagination encryption keys not configured")
 	}
 
 	parsed, err := keysetpagination.ParsePageToken(keys, pageToken)

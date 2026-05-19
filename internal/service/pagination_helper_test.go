@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/gofrs/uuid"
@@ -12,6 +13,7 @@ import (
 	"github.com/ory/herodot"
 
 	"github.com/ory-corp/talos/internal/contextx"
+	"github.com/ory-corp/talos/internal/crypto"
 
 	"github.com/ory-corp/talos/internal/config"
 	"github.com/ory-corp/talos/internal/pagination"
@@ -20,13 +22,58 @@ import (
 	"github.com/ory/x/configx"
 )
 
+// fakeConfigProvider is a minimal ConfigProvider stub for unit tests of helpers
+// that only need a small slice of configuration. It avoids the schema validation
+// performed by the real provider, which prevents constructing fixtures with
+// intentionally missing or empty secrets.
+type fakeConfigProvider struct {
+	strings map[config.Key]string
+	lists   map[config.Key][]string
+}
+
+func (f *fakeConfigProvider) String(_ context.Context, key config.Key) string {
+	return f.strings[key]
+}
+
+func (f *fakeConfigProvider) Strings(_ context.Context, key config.Key) []string {
+	return f.lists[key]
+}
+
+func (f *fakeConfigProvider) Duration(_ context.Context, _ config.Key) time.Duration {
+	return 0
+}
+
+func (f *fakeConfigProvider) Int(_ context.Context, _ config.Key) int {
+	return 0
+}
+
+func TestPaginationKeys_RequireHMACSecret(t *testing.T) {
+	t.Parallel()
+
+	// With no HMAC secret configured, decoding any token must fail with an
+	// internal-error wrap of the "no HMAC key configured" message. This
+	// guards against a regression where a missing secret silently degrades
+	// to an unsigned cursor.
+	provider := &fakeConfigProvider{}
+	helper := &paginationHelper{provider: provider}
+
+	_, err := helper.prepareListQuery(t.Context(), "", 10, "some-non-empty-token")
+	require.Error(t, err)
+	herodotErr := new(herodot.DefaultError)
+	require.True(t, errors.As(err, &herodotErr), "error should be a herodot DefaultError")
+	assert.Contains(t, errors.Unwrap(herodotErr).Error(), "no HMAC key configured")
+}
+
 func TestPaginationHelper_PrepareListQuery(t *testing.T) {
+	t.Parallel()
+
 	const testSecret = "test-secret-at-least-32-bytes-long"
 	mockProvider := testutil.NewTestProvider(t, configx.WithValues(map[string]any{
-		config.KeySecretsPagination.String(): testSecret,
+		config.KeySecretsHMACCurrent.String(): testSecret,
 	}))
 	helper := &paginationHelper{provider: mockProvider}
 	ctx := t.Context()
+	testKey := crypto.DerivePaginationKey(testSecret)
 
 	t.Run("empty token returns empty cursor key", func(t *testing.T) {
 		params, err := helper.prepareListQuery(ctx, "", 10, "")
@@ -36,7 +83,7 @@ func TestPaginationHelper_PrepareListQuery(t *testing.T) {
 	})
 
 	t.Run("valid token decodes cursor key", func(t *testing.T) {
-		token, err := pagination.EncodeCursor(testSecret, "item-123", contextx.NetworkIDFromContext(ctx).String())
+		token, err := pagination.EncodeCursor(testKey, "item-123", contextx.NetworkIDFromContext(ctx).String())
 		require.NoError(t, err)
 
 		params, err := helper.prepareListQuery(ctx, "", 10, token)
@@ -48,7 +95,7 @@ func TestPaginationHelper_PrepareListQuery(t *testing.T) {
 		tenant1Ctx := context.WithValue(ctx, contextx.NIDKey{}, uuid.Must(uuid.FromString("11111111-1111-1111-1111-111111111111")))
 		tenant2Ctx := context.WithValue(ctx, contextx.NIDKey{}, uuid.Must(uuid.FromString("22222222-2222-2222-2222-222222222222")))
 
-		token, err := pagination.EncodeCursor(testSecret, "item-123", contextx.NetworkIDFromContext(tenant1Ctx).String())
+		token, err := pagination.EncodeCursor(testKey, "item-123", contextx.NetworkIDFromContext(tenant1Ctx).String())
 		require.NoError(t, err)
 
 		_, err = helper.prepareListQuery(tenant2Ctx, "", 10, token)
@@ -72,7 +119,7 @@ func TestPaginationHelper_OSSMode(t *testing.T) {
 	// returns the nil UUID string "00000000-0000-0000-0000-000000000000".
 	// This test verifies the full encode -> decode roundtrip works with that value.
 	mockProvider := testutil.NewTestProvider(t, configx.WithValues(map[string]any{
-		config.KeySecretsPagination.String(): "test-secret-at-least-32-bytes-long",
+		config.KeySecretsHMACCurrent.String(): "test-secret-at-least-32-bytes-long",
 	}))
 	helper := &paginationHelper{provider: mockProvider}
 	ctx := t.Context()
@@ -88,7 +135,36 @@ func TestPaginationHelper_OSSMode(t *testing.T) {
 	assert.Equal(t, "last-item-id", params.cursorKey)
 }
 
+func TestPaginationHelper_HMACRotation(t *testing.T) {
+	t.Parallel()
+
+	// Tokens encrypted with a retired HMAC secret must still decode after
+	// rotation, because the pagination key set tracks the HMAC key set 1:1.
+	const oldSecret = "old-hmac-secret-at-least-32-bytes-long"
+	const newSecret = "new-hmac-secret-at-least-32-bytes-long"
+
+	mockProvider := testutil.NewTestProvider(t, configx.WithValues(map[string]any{
+		config.KeySecretsHMACCurrent.String(): newSecret,
+		config.KeySecretsHMACRetired.String(): []string{oldSecret},
+	}))
+	helper := &paginationHelper{provider: mockProvider}
+	ctx := t.Context()
+
+	// Encode a token using the OLD key (simulating a token issued before rotation).
+	oldKey := crypto.DerivePaginationKey(oldSecret)
+	tokenFromOldKey, err := pagination.EncodeCursor(oldKey, "item-from-before-rotation", contextx.NetworkIDFromContext(ctx).String())
+	require.NoError(t, err)
+
+	// The helper, configured with the new secret as current, must still decode
+	// the old token via the retired secret.
+	params, err := helper.prepareListQuery(ctx, "", 10, tokenFromOldKey)
+	require.NoError(t, err)
+	assert.Equal(t, "item-from-before-rotation", params.cursorKey)
+}
+
 func Test_trimResults(t *testing.T) {
+	t.Parallel()
+
 	t.Run("trims extra result", func(t *testing.T) {
 		results := []int{1, 2, 3, 4} // Fetched 4
 		pageSize := int32(3)
@@ -122,12 +198,15 @@ func Test_trimResults(t *testing.T) {
 }
 
 func TestPaginationHelper_PrepareListQuery_Adversarial(t *testing.T) {
+	t.Parallel()
+
 	const testSecret = "test-secret-at-least-32-bytes-long"
 	mockProvider := testutil.NewTestProvider(t, configx.WithValues(map[string]any{
-		config.KeySecretsPagination.String(): testSecret,
+		config.KeySecretsHMACCurrent.String(): testSecret,
 	}))
 	helper := &paginationHelper{provider: mockProvider}
 	ctx := t.Context()
+	testKey := crypto.DerivePaginationKey(testSecret)
 
 	t.Run("page size boundaries", func(t *testing.T) {
 		tests := []struct {
@@ -217,7 +296,7 @@ func TestPaginationHelper_PrepareListQuery_Adversarial(t *testing.T) {
 
 	t.Run("tampered token bytes returns bad request", func(t *testing.T) {
 		// Encode a valid token then corrupt it
-		token, err := pagination.EncodeCursor(testSecret, "item-1", contextx.NetworkIDFromContext(ctx).String())
+		token, err := pagination.EncodeCursor(testKey, "item-1", contextx.NetworkIDFromContext(ctx).String())
 		require.NoError(t, err)
 
 		corrupted := token[:len(token)-3] + "XXX"
@@ -225,9 +304,9 @@ func TestPaginationHelper_PrepareListQuery_Adversarial(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	t.Run("wrong-secret token returns bad request", func(t *testing.T) {
-		wrongSecret := "another-secret-at-least-32-bytes!!"
-		token, err := pagination.EncodeCursor(wrongSecret, "item-1", contextx.NetworkIDFromContext(ctx).String())
+	t.Run("wrong-key token returns bad request", func(t *testing.T) {
+		wrongKey := crypto.DerivePaginationKey("another-secret-at-least-32-bytes!!")
+		token, err := pagination.EncodeCursor(wrongKey, "item-1", contextx.NetworkIDFromContext(ctx).String())
 		require.NoError(t, err)
 
 		_, err = helper.prepareListQuery(ctx, "", 10, token)
@@ -236,9 +315,11 @@ func TestPaginationHelper_PrepareListQuery_Adversarial(t *testing.T) {
 }
 
 func TestPaginationHelper_NextPageToken(t *testing.T) {
+	t.Parallel()
+
 	const testSecret = "test-secret-at-least-32-bytes-long"
 	mockProvider := testutil.NewTestProvider(t, configx.WithValues(map[string]any{
-		config.KeySecretsPagination.String(): testSecret,
+		config.KeySecretsHMACCurrent.String(): testSecret,
 	}))
 	helper := &paginationHelper{provider: mockProvider}
 	ctx := t.Context()

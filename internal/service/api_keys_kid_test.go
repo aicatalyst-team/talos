@@ -65,8 +65,6 @@ func TestDeriveToken_KIDHintRoutesToConfiguredKey(t *testing.T) {
 
 			provider := testutil.NewTestProviderWithSigningKeys(t, configx.WithValues(map[string]any{
 				config.KeySecretsHMACCurrent.String():                            "test-hmac-secret-for-api-key-hashing-minimum-32-chars",
-				config.KeySecretsDefaultCurrent.String():                         "test-hmac-secret-for-api-key-hashing-minimum-32-chars",
-				config.KeySecretsPagination.String():                             "test-secret-for-pagination-encryption-must-be-at-least-32-chars",
 				config.KeyCredentialsAPIKeysDefaultTTL.String():                  "2160h",
 				config.KeyCredentialsAPIKeysMaxTTL.String():                      "8760h",
 				config.KeyCredentialsDerivedTokensDefaultTTL.String():            "1h",

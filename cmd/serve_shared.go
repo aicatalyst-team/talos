@@ -121,10 +121,12 @@ func initializeServerDependencies(ctx context.Context, provider talosconfig.Prov
 		propOpts.RegisterDatabaseMetrics(dbDriver, log)
 	}
 
-	// Validate required config (but don't cache the value!)
-	defaultSecret := provider.String(ctx, talosconfig.KeySecretsDefaultCurrent)
-	if defaultSecret == "" {
-		return nil, cleanup, errors.Newf("%q is required but not set in configuration", talosconfig.KeySecretsDefaultCurrent)
+	// Validate required config (but don't cache the values!).
+	// The HMAC secret is the single source of truth for both API key
+	// checksums and the derived pagination cursor encryption key.
+	hmacSecret := provider.String(ctx, talosconfig.KeySecretsHMACCurrent)
+	if hmacSecret == "" {
+		return nil, cleanup, errors.Newf("%q is required but not set in configuration", talosconfig.KeySecretsHMACCurrent)
 	}
 
 	log.Info("Configuration validated")

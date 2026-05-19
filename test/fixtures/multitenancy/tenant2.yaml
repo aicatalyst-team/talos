@@ -12,12 +12,6 @@ credentials:
           - "file://./test/fixtures/multitenancy/signing-keys/tenant2-rsa.jwks.json"
 
 secrets:
-  default:
-    current: "tenant2-secret-minimum-32-chars-long-ddddddddddd"
-    retired: []
   hmac:
     current: "tenant2-hmac-secret-32-chars-eeeeeeeeeee"
-    retired: []
-  pagination:
-    current: "tenant2-pagination-secret-32chars-fffffff"
     retired: []

@@ -44,7 +44,7 @@ runs:
         credentials:
           issuer: "talos-demo"
         secrets:
-          default:
+          hmac:
             current: $(openssl rand -base64 32)
             retired: []
         db:

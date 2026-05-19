@@ -93,9 +93,7 @@ func setupBenchmark(b *testing.B) {
 		// Create config provider with test values and signing keys for token derivation
 		testSecret := "benchmark-hmac-secret-for-api-key-hashing-32-chars"
 		mockProvider := testutil.NewTestProviderWithSigningKeys(b, configx.WithValues(map[string]any{
-			config.KeySecretsDefaultCurrent.String():                         testSecret,
 			config.KeySecretsHMACCurrent.String():                            testSecret,
-			config.KeySecretsPagination.String():                             testSecret,
 			config.KeyCredentialsAPIKeysPrefixCurrent.String():               "talos",
 			config.KeyCredentialsDerivedTokensMacaroonPrefixCurrent.String(): "mc",
 			config.KeyCacheTTL.String():                                      "5m",

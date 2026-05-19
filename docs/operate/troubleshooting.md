@@ -34,11 +34,8 @@ If a migration failed partway through, inspect the database schema and retry wit
 
 ### Secret too short
 
-```
-Error: secret must be at least 32 characters
-```
-
-Set `secrets.default.current` to a string of at least 32 characters.
+If startup fails with a configuration error about `secrets.hmac.current` not meeting the minimum
+length, set the value to a string of at least 32 characters.
 
 ### Key verification returns not found
 

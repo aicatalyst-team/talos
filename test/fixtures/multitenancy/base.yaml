@@ -17,13 +17,7 @@ tracing:
   enabled: false
 
 secrets:
-  default:
-    current: "base-secret-minimum-32-chars-long-xxxxxxxxxxxx"
-    retired: []
   hmac:
     current: "base-hmac-secret-32-chars-yyyyyyyyyyyyyy"
-    retired: []
-  pagination:
-    current: "base-pagination-secret-32chars-zzzzzzzz"
     retired: []
 

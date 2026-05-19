@@ -34,10 +34,6 @@ log:
   format: "json"
 
 secrets:
-  default:
-    current: "doctest-hmac-secret-for-api-key-hashing-minimum-32-chars"
-  pagination:
-    current: "doctest-pagination-secret-must-be-at-least-32-characters-long"
   hmac:
     current: "doctest-hmac-secret-for-api-key-checksum-validation-32chars"
 

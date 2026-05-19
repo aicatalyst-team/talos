@@ -112,9 +112,6 @@ credentials:
         current: "mc"
 
 secrets:
-  default:
-    current: "test-secret-for-ci-load-testing-minimum-32-characters-long"
-    retired: []
   hmac:
     current: "test-hmac-secret-for-ci-load-testing-minimum-32-chars"
     retired: []
@@ -200,9 +197,6 @@ credentials:
         current: "mc"
 
 secrets:
-  default:
-    current: "test-secret-for-ci-load-testing-minimum-32-characters-long"
-    retired: []
   hmac:
     current: "test-hmac-secret-for-ci-load-testing-minimum-32-chars"
     retired: []

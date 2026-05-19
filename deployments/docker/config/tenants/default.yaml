@@ -1,10 +1,7 @@
 # Default tenant configuration
 secrets:
-  default:
-    current: "docker-compose-default-tenant-secret-32chars"
-    retired: []
-  pagination:
-    current: "docker-compose-default-pagination-secret-32ch"
+  hmac:
+    current: "docker-compose-default-tenant-hmac-secret-32"
     retired: []
 
 # Signing keys for token derivation (JWT and macaroon)

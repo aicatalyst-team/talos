@@ -2,12 +2,19 @@ package crypto
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
 	"slices"
 
 	"github.com/cockroachdb/errors"
 
 	talosconfig "github.com/ory-corp/talos/internal/config"
 )
+
+// paginationKeyDomain is the domain separator that turns the shared HMAC
+// secret into the pagination cursor encryption key. It must never be reused
+// for other key derivations.
+const paginationKeyDomain = "talos/pagination/v1/cursor-key"
 
 // ConfigProvider defines configuration methods used by crypto helpers.
 type ConfigProvider interface {
@@ -38,12 +45,31 @@ func HMACSecretForSigning(ctx context.Context, provider ConfigProvider) (string,
 	return current, nil
 }
 
-// DefaultSecrets returns all default secrets (current + retired) for verification.
-// Used by components that fall back to default secret (e.g., pagination).
-func DefaultSecrets(ctx context.Context, provider ConfigProvider) []string {
-	current := provider.String(ctx, talosconfig.KeySecretsDefaultCurrent)
-	retired := provider.Strings(ctx, talosconfig.KeySecretsDefaultRetired)
-	return slices.Concat([]string{current}, retired)
+// DerivePaginationKey derives the 32-byte pagination cursor encryption key
+// from the shared HMAC secret using domain-separated HMAC-SHA256. Mirrors the
+// macaroon root key derivation so a single HMAC secret feeds both purposes
+// without collision.
+func DerivePaginationKey(hmacSecret string) [32]byte {
+	h := hmac.New(sha256.New, []byte(hmacSecret))
+	h.Write([]byte(paginationKeyDomain))
+	var out [32]byte
+	copy(out[:], h.Sum(nil))
+	return out
+}
+
+// PaginationKeysForVerification returns the pagination cursor keys derived
+// from the configured HMAC secrets, in [current, ...retired] order so tokens
+// signed with a retired secret still decode during rotation.
+func PaginationKeysForVerification(ctx context.Context, provider ConfigProvider) ([][32]byte, error) {
+	secrets, err := HMACSecretsForVerification(ctx, provider)
+	if err != nil {
+		return nil, err
+	}
+	keys := make([][32]byte, len(secrets))
+	for i, s := range secrets {
+		keys[i] = DerivePaginationKey(s)
+	}
+	return keys, nil
 }
 
 // reviewed - @aeneasr - 2026-03-26
