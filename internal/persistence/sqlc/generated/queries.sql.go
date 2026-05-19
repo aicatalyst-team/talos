@@ -463,6 +463,72 @@ func (q *Queries) GetIssuedAPIKeyByRequestID(ctx context.Context, nID uuid.UUID,
 	return i, err
 }
 
+const ListActiveImportedKeyIDsBounded = `-- name: ListActiveImportedKeyIDsBounded :many
+SELECT key_id FROM imported_api_keys
+WHERE nid = ?1 AND status = ?2
+ORDER BY key_id
+LIMIT ?3
+`
+
+// Returns up to sqlc.arg(batch_limit) active imported API key IDs for the network.
+// Used for cap enforcement (quota.api_keys_max). The query is bounded;
+// callers count the returned rows. Never scans an unbounded set.
+func (q *Queries) ListActiveImportedKeyIDsBounded(ctx context.Context, nID uuid.UUID, activeStatus int32, batchLimit int64) ([]string, error) {
+	rows, err := q.query(ctx, q.listActiveImportedKeyIDsBoundedStmt, ListActiveImportedKeyIDsBounded, nID, activeStatus, batchLimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var key_id string
+		if err := rows.Scan(&key_id); err != nil {
+			return nil, err
+		}
+		items = append(items, key_id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const ListActiveIssuedKeyIDsBounded = `-- name: ListActiveIssuedKeyIDsBounded :many
+SELECT key_id FROM issued_api_keys
+WHERE nid = ?1 AND status = ?2
+ORDER BY key_id
+LIMIT ?3
+`
+
+// Returns up to sqlc.arg(batch_limit) active issued API key IDs for the network.
+// Used for cap enforcement (quota.api_keys_max). The query is bounded;
+// callers count the returned rows. Never scans an unbounded set.
+func (q *Queries) ListActiveIssuedKeyIDsBounded(ctx context.Context, nID uuid.UUID, activeStatus int32, batchLimit int64) ([]string, error) {
+	rows, err := q.query(ctx, q.listActiveIssuedKeyIDsBoundedStmt, ListActiveIssuedKeyIDsBounded, nID, activeStatus, batchLimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var key_id string
+		if err := rows.Scan(&key_id); err != nil {
+			return nil, err
+		}
+		items = append(items, key_id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const ListImportedAPIKeys = `-- name: ListImportedAPIKeys :many
 SELECT nid, key_id, name, actor_id, scopes, status, metadata, last_used_at, expires_at, created_at, updated_at, rate_limit_quota, rate_limit_window, revocation_reason, revocation_reason_text, allowed_cidrs, request_id, visibility
 FROM imported_api_keys

@@ -103,6 +103,24 @@ WHERE ROWID IN (
     LIMIT sqlc.arg(batch_limit)
 );
 
+-- name: ListActiveIssuedKeyIDsBounded :many
+-- Returns up to sqlc.arg(batch_limit) active issued API key IDs for the network.
+-- Used for cap enforcement (quota.api_keys_max). The query is bounded;
+-- callers count the returned rows. Never scans an unbounded set.
+SELECT key_id FROM issued_api_keys
+WHERE nid = sqlc.arg(nid) AND status = sqlc.arg(active_status)
+ORDER BY key_id
+LIMIT sqlc.arg(batch_limit);
+
+-- name: ListActiveImportedKeyIDsBounded :many
+-- Returns up to sqlc.arg(batch_limit) active imported API key IDs for the network.
+-- Used for cap enforcement (quota.api_keys_max). The query is bounded;
+-- callers count the returned rows. Never scans an unbounded set.
+SELECT key_id FROM imported_api_keys
+WHERE nid = sqlc.arg(nid) AND status = sqlc.arg(active_status)
+ORDER BY key_id
+LIMIT sqlc.arg(batch_limit);
+
 -- Imported Key Queries
 
 -- name: CreateImportedAPIKey :one

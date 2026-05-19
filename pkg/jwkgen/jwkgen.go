@@ -24,11 +24,15 @@ import (
 )
 
 // GenerateSigningKeyJWKS generates a new signing key and returns it as a JWKS
-// JSON string containing the private key material. The key includes a
-// thumbprint-based key ID, the "sig" usage, and the specified algorithm.
+// JSON string containing the private key material. The key includes the "sig"
+// usage, the specified algorithm, and a key ID.
 //
 // If alg is empty, EdDSA is used. Supported values: "EdDSA", "RS256".
-func GenerateSigningKeyJWKS(alg string) (string, error) {
+//
+// If kid is empty, the key ID is derived from a SHA-256 thumbprint of the
+// public key. If kid is non-empty, it is used verbatim with no format
+// validation, matching talos's lookup rules.
+func GenerateSigningKeyJWKS(alg, kid string) (string, error) {
 	if alg == "" {
 		alg = "EdDSA"
 	}
@@ -61,7 +65,11 @@ func GenerateSigningKeyJWKS(alg string) (string, error) {
 		return "", errors.Wrap(err, "import key as JWK")
 	}
 
-	if err := setThumbprintKeyID(key); err != nil {
+	if kid != "" {
+		if err := key.Set(jwk.KeyIDKey, kid); err != nil {
+			return "", errors.Wrap(err, "set key ID")
+		}
+	} else if err := setThumbprintKeyID(key); err != nil {
 		return "", err
 	}
 	if err := key.Set(jwk.AlgorithmKey, sigAlg); err != nil {
@@ -82,6 +90,24 @@ func GenerateSigningKeyJWKS(alg string) (string, error) {
 	}
 
 	return injectCreatedAt(string(data), time.Now().UTC())
+}
+
+// ExtractSigningKeyID returns the "kid" of the first key in a JWKS JSON
+// string. It lets callers recover the kid assigned by GenerateSigningKeyJWKS
+// without reimplementing JWKS parsing.
+func ExtractSigningKeyID(jwksJSON string) (string, error) {
+	var jwks struct {
+		Keys []struct {
+			Kid string `json:"kid"`
+		} `json:"keys"`
+	}
+	if err := json.Unmarshal([]byte(jwksJSON), &jwks); err != nil {
+		return "", errors.Wrap(err, "parse JWKS JSON")
+	}
+	if len(jwks.Keys) == 0 {
+		return "", errors.New("JWKS contains no keys")
+	}
+	return jwks.Keys[0].Kid, nil
 }
 
 // HMACSecret is the JSON-serializable format for HMAC secrets stored in

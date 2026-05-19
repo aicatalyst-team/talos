@@ -273,7 +273,8 @@
               "properties": {
                 "signing_key_id": {
                   "type": "string",
-                  "description": "Optional JWK 'kid' hint used to select the active signing key. When set, derived JWTs are signed with the key whose 'kid' matches and signing fails if no such key exists. When unset, the first key with use=\"sig\" is selected, falling back to the first key in the set."
+                  "description": "Optional JWK 'kid' hint used to select the active signing key. When set, derived JWTs are signed with the key whose 'kid' matches and signing fails if no such key exists. When unset, the first key with use=\"sig\" is selected, falling back to the first key in the set.",
+                  "default": ""
                 },
                 "signing_keys": {
                   "type": "object",
@@ -702,6 +703,18 @@
       },
       "additionalProperties": false,
       "required": ["default"]
+    },
+    "quota": {
+      "type": "object",
+      "description": "Resource caps for the current subscription tier. Caps are emitted by the platform configuration pipeline based on the project's plan; metered tiers omit the corresponding field. Hot-reloadable.",
+      "properties": {
+        "api_keys_max": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum number of non-revoked API keys (issued + imported) the tenant may hold. Omitted when the plan meters API keys without a cap. Enforced at issuance and import time; revoked keys do not count. Enforcement is best-effort: the active-key count is read outside the insert transaction, so concurrent issuance may briefly exceed the cap by up to N-1 keys, where N is the burst concurrency. Subsequent requests that observe the over-cap state are rejected, so the breach is transient. Use metered billing instead when a hard limit is required."
+        }
+      },
+      "additionalProperties": false
     },
     "multitenancy": {
       "type": "object",

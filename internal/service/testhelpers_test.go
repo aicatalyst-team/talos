@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"context"
+	"maps"
 	"testing"
 	"time"
 
@@ -69,6 +70,40 @@ func setupTestService(t *testing.T) (*service.Admin, *verifier.Verifier, context
 	svc := service.NewAdminFromProvider(driver, provider, events.NewNoopEmitter(), keyService, cache.NewNoopCache[db.IssuedApiKey](), pv, metrics.New(prometheus.NewRegistry()), tracker)
 
 	return svc, svc.Verifier(), ctx
+}
+
+// setupTestServiceWithConfig creates a test Admin with extra config overrides
+// merged on top of baseTestConfig. Used by tests that need quota or other
+// non-default settings.
+func setupTestServiceWithConfig(t *testing.T, overrides map[string]any) (*service.Admin, context.Context) {
+	t.Helper()
+	ctx := t.Context()
+
+	driver, err := testutil.InitDriver(t, "")
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		if err := driver.Close(); err != nil {
+			t.Logf("warning: error closing driver: %v", err)
+		}
+	})
+
+	cfg := baseTestConfig()
+	maps.Copy(cfg, overrides)
+
+	provider := testutil.NewTestProviderWithSigningKeys(t, configx.WithValues(cfg))
+
+	keyService, err := crypto.NewKeyService(ctx, provider, httpx.NewResilientClient(), crypto.NoopKeyServiceMetrics())
+	require.NoError(t, err)
+	pv, err := protovalidate.New()
+	require.NoError(t, err)
+
+	tracker := lastused.New(ctx, driver, lastused.Config{
+		QueueSize: 100, FlushSize: 100, FlushInterval: time.Hour, NumWorkers: 1,
+	})
+	t.Cleanup(tracker.Close)
+
+	svc := service.NewAdminFromProvider(driver, provider, events.NewNoopEmitter(), keyService, cache.NewNoopCache[db.IssuedApiKey](), pv, metrics.New(prometheus.NewRegistry()), tracker)
+	return svc, ctx
 }
 
 // setupTestAdminWithPublicPrefix creates a test Admin with a public key prefix configured.

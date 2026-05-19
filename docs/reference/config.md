@@ -89,7 +89,7 @@ Credential configuration for API keys and derived tokens (JWT, macaroon).
 | `credentials.api_keys.prefix.retired`                | string[] | `[]`     | `TALOS_CREDENTIALS_API_KEYS_PREFIX_RETIRED`                | Retired prefixes accepted during verification for migration purposes.                                                               |
 | `credentials.clock_skew`                             | string   | `5m`     | `TALOS_CREDENTIALS_CLOCK_SKEW`                             | Maximum clock skew tolerance for timestamp and token validation.                                                                    |
 | `credentials.derived_tokens.default_ttl`             | string   | `1h`     | `TALOS_CREDENTIALS_DERIVED_TOKENS_DEFAULT_TTL`             | Default derived token TTL applied to both JWT and macaroon tokens when no explicit TTL is provided in the request (duration string) |
-| `credentials.derived_tokens.jwt.signing_key_id`      | string   | —        | `TALOS_CREDENTIALS_DERIVED_TOKENS_JWT_SIGNING_KEY_ID`      | Optional JWK 'kid' hint used to select the active signing key.                                                                      |
+| `credentials.derived_tokens.jwt.signing_key_id`      | string   | ""       | `TALOS_CREDENTIALS_DERIVED_TOKENS_JWT_SIGNING_KEY_ID`      | Optional JWK 'kid' hint used to select the active signing key.                                                                      |
 | `credentials.derived_tokens.jwt.signing_keys.urls`   | string[] | `[]`     | `TALOS_CREDENTIALS_DERIVED_TOKENS_JWT_SIGNING_KEYS_URLS`   | List of JWKS resources.                                                                                                             |
 | `credentials.derived_tokens.macaroon.prefix.current` | string   | `mc`     | `TALOS_CREDENTIALS_DERIVED_TOKENS_MACAROON_PREFIX_CURRENT` | Current prefix used for new macaroon token generation.                                                                              |
 | `credentials.derived_tokens.macaroon.prefix.retired` | string[] | `[]`     | `TALOS_CREDENTIALS_DERIVED_TOKENS_MACAROON_PREFIX_RETIRED` | Retired prefixes accepted during macaroon verification for rotation purposes.                                                       |
@@ -132,6 +132,14 @@ Multi-tenancy configuration.
 | ----------------------- | -------- | ------- | ----------------------------- | ------------------------------------------------------------- |
 | `multitenancy.enabled`  | boolean  | `false` | `TALOS_MULTITENANCY_ENABLED`  | Enable multi-tenancy support. (restart required, Commercial)  |
 | `multitenancy.networks` | object[] | `[]`    | `TALOS_MULTITENANCY_NETWORKS` | Network routing configuration. (restart required, Commercial) |
+
+## `quota`
+
+Resource caps for the current subscription tier.
+
+| Key                  | Type    | Default | Env Var                    | Description                                                                     |
+| -------------------- | ------- | ------- | -------------------------- | ------------------------------------------------------------------------------- |
+| `quota.api_keys_max` | integer | —       | `TALOS_QUOTA_API_KEYS_MAX` | Maximum number of non-revoked API keys (issued + imported) the tenant may hold. |
 
 ## `rate_limit` Commercial
 

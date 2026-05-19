@@ -39,6 +39,14 @@ type Querier interface {
 	GetIssuedAPIKey(ctx context.Context, nID uuid.UUID, keyID string) (IssuedApiKey, error)
 	// Lookup issued API key by idempotency key (AIP-133)
 	GetIssuedAPIKeyByRequestID(ctx context.Context, nID uuid.UUID, requestID *string) (IssuedApiKey, error)
+	// Returns up to sqlc.arg(batch_limit) active imported API key IDs for the network.
+	// Used for cap enforcement (quota.api_keys_max). The query is bounded;
+	// callers count the returned rows. Never scans an unbounded set.
+	ListActiveImportedKeyIDsBounded(ctx context.Context, nID uuid.UUID, activeStatus int32, batchLimit int64) ([]string, error)
+	// Returns up to sqlc.arg(batch_limit) active issued API key IDs for the network.
+	// Used for cap enforcement (quota.api_keys_max). The query is bounded;
+	// callers count the returned rows. Never scans an unbounded set.
+	ListActiveIssuedKeyIDsBounded(ctx context.Context, nID uuid.UUID, activeStatus int32, batchLimit int64) ([]string, error)
 	// Cursor-based pagination using primary key (key_id)
 	// Pass NULL for cursor_key_id to start from the beginning
 	// Note: Imported keys use hash IDs (not time-sortable), so order is deterministic but not chronological

@@ -48,6 +48,7 @@ func httpStatusCodes() map[string]int {
 	return map[string]int{
 		"StatusBadRequest":          400,
 		"StatusUnauthorized":        401,
+		"StatusPaymentRequired":     402,
 		"StatusForbidden":           403,
 		"StatusNotFound":            404,
 		"StatusConflict":            409,

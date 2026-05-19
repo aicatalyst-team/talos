@@ -57,6 +57,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getIssuedAPIKeyByRequestIDStmt, err = db.PrepareContext(ctx, GetIssuedAPIKeyByRequestID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetIssuedAPIKeyByRequestID: %w", err)
 	}
+	if q.listActiveImportedKeyIDsBoundedStmt, err = db.PrepareContext(ctx, ListActiveImportedKeyIDsBounded); err != nil {
+		return nil, fmt.Errorf("error preparing query ListActiveImportedKeyIDsBounded: %w", err)
+	}
+	if q.listActiveIssuedKeyIDsBoundedStmt, err = db.PrepareContext(ctx, ListActiveIssuedKeyIDsBounded); err != nil {
+		return nil, fmt.Errorf("error preparing query ListActiveIssuedKeyIDsBounded: %w", err)
+	}
 	if q.listImportedAPIKeysStmt, err = db.PrepareContext(ctx, ListImportedAPIKeys); err != nil {
 		return nil, fmt.Errorf("error preparing query ListImportedAPIKeys: %w", err)
 	}
@@ -141,6 +147,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getIssuedAPIKeyByRequestIDStmt: %w", cerr)
 		}
 	}
+	if q.listActiveImportedKeyIDsBoundedStmt != nil {
+		if cerr := q.listActiveImportedKeyIDsBoundedStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listActiveImportedKeyIDsBoundedStmt: %w", cerr)
+		}
+	}
+	if q.listActiveIssuedKeyIDsBoundedStmt != nil {
+		if cerr := q.listActiveIssuedKeyIDsBoundedStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listActiveIssuedKeyIDsBoundedStmt: %w", cerr)
+		}
+	}
 	if q.listImportedAPIKeysStmt != nil {
 		if cerr := q.listImportedAPIKeysStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listImportedAPIKeysStmt: %w", cerr)
@@ -218,51 +234,55 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                               DBTX
-	tx                               *sql.Tx
-	createImportedAPIKeyStmt         *sql.Stmt
-	createIssuedAPIKeyStmt           *sql.Stmt
-	deleteImportedAPIKeyStmt         *sql.Stmt
-	deleteIssuedAPIKeyStmt           *sql.Stmt
-	expireIssuedAPIKeysStmt          *sql.Stmt
-	getActiveIssuedAPIKeyStmt        *sql.Stmt
-	getExpiredIssuedAPIKeysStmt      *sql.Stmt
-	getImportedAPIKeyByHashStmt      *sql.Stmt
-	getImportedAPIKeyByRequestIDStmt *sql.Stmt
-	getIssuedAPIKeyStmt              *sql.Stmt
-	getIssuedAPIKeyByRequestIDStmt   *sql.Stmt
-	listImportedAPIKeysStmt          *sql.Stmt
-	listIssuedAPIKeysByNetworkStmt   *sql.Stmt
-	revokeImportedAPIKeyStmt         *sql.Stmt
-	revokeIssuedAPIKeyStmt           *sql.Stmt
-	updateImportedAPIKeyLastUsedStmt *sql.Stmt
-	updateImportedAPIKeyMetadataStmt *sql.Stmt
-	updateIssuedAPIKeyStmt           *sql.Stmt
-	updateIssuedAPIKeyLastUsedStmt   *sql.Stmt
+	db                                  DBTX
+	tx                                  *sql.Tx
+	createImportedAPIKeyStmt            *sql.Stmt
+	createIssuedAPIKeyStmt              *sql.Stmt
+	deleteImportedAPIKeyStmt            *sql.Stmt
+	deleteIssuedAPIKeyStmt              *sql.Stmt
+	expireIssuedAPIKeysStmt             *sql.Stmt
+	getActiveIssuedAPIKeyStmt           *sql.Stmt
+	getExpiredIssuedAPIKeysStmt         *sql.Stmt
+	getImportedAPIKeyByHashStmt         *sql.Stmt
+	getImportedAPIKeyByRequestIDStmt    *sql.Stmt
+	getIssuedAPIKeyStmt                 *sql.Stmt
+	getIssuedAPIKeyByRequestIDStmt      *sql.Stmt
+	listActiveImportedKeyIDsBoundedStmt *sql.Stmt
+	listActiveIssuedKeyIDsBoundedStmt   *sql.Stmt
+	listImportedAPIKeysStmt             *sql.Stmt
+	listIssuedAPIKeysByNetworkStmt      *sql.Stmt
+	revokeImportedAPIKeyStmt            *sql.Stmt
+	revokeIssuedAPIKeyStmt              *sql.Stmt
+	updateImportedAPIKeyLastUsedStmt    *sql.Stmt
+	updateImportedAPIKeyMetadataStmt    *sql.Stmt
+	updateIssuedAPIKeyStmt              *sql.Stmt
+	updateIssuedAPIKeyLastUsedStmt      *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                               tx,
-		tx:                               tx,
-		createImportedAPIKeyStmt:         q.createImportedAPIKeyStmt,
-		createIssuedAPIKeyStmt:           q.createIssuedAPIKeyStmt,
-		deleteImportedAPIKeyStmt:         q.deleteImportedAPIKeyStmt,
-		deleteIssuedAPIKeyStmt:           q.deleteIssuedAPIKeyStmt,
-		expireIssuedAPIKeysStmt:          q.expireIssuedAPIKeysStmt,
-		getActiveIssuedAPIKeyStmt:        q.getActiveIssuedAPIKeyStmt,
-		getExpiredIssuedAPIKeysStmt:      q.getExpiredIssuedAPIKeysStmt,
-		getImportedAPIKeyByHashStmt:      q.getImportedAPIKeyByHashStmt,
-		getImportedAPIKeyByRequestIDStmt: q.getImportedAPIKeyByRequestIDStmt,
-		getIssuedAPIKeyStmt:              q.getIssuedAPIKeyStmt,
-		getIssuedAPIKeyByRequestIDStmt:   q.getIssuedAPIKeyByRequestIDStmt,
-		listImportedAPIKeysStmt:          q.listImportedAPIKeysStmt,
-		listIssuedAPIKeysByNetworkStmt:   q.listIssuedAPIKeysByNetworkStmt,
-		revokeImportedAPIKeyStmt:         q.revokeImportedAPIKeyStmt,
-		revokeIssuedAPIKeyStmt:           q.revokeIssuedAPIKeyStmt,
-		updateImportedAPIKeyLastUsedStmt: q.updateImportedAPIKeyLastUsedStmt,
-		updateImportedAPIKeyMetadataStmt: q.updateImportedAPIKeyMetadataStmt,
-		updateIssuedAPIKeyStmt:           q.updateIssuedAPIKeyStmt,
-		updateIssuedAPIKeyLastUsedStmt:   q.updateIssuedAPIKeyLastUsedStmt,
+		db:                                  tx,
+		tx:                                  tx,
+		createImportedAPIKeyStmt:            q.createImportedAPIKeyStmt,
+		createIssuedAPIKeyStmt:              q.createIssuedAPIKeyStmt,
+		deleteImportedAPIKeyStmt:            q.deleteImportedAPIKeyStmt,
+		deleteIssuedAPIKeyStmt:              q.deleteIssuedAPIKeyStmt,
+		expireIssuedAPIKeysStmt:             q.expireIssuedAPIKeysStmt,
+		getActiveIssuedAPIKeyStmt:           q.getActiveIssuedAPIKeyStmt,
+		getExpiredIssuedAPIKeysStmt:         q.getExpiredIssuedAPIKeysStmt,
+		getImportedAPIKeyByHashStmt:         q.getImportedAPIKeyByHashStmt,
+		getImportedAPIKeyByRequestIDStmt:    q.getImportedAPIKeyByRequestIDStmt,
+		getIssuedAPIKeyStmt:                 q.getIssuedAPIKeyStmt,
+		getIssuedAPIKeyByRequestIDStmt:      q.getIssuedAPIKeyByRequestIDStmt,
+		listActiveImportedKeyIDsBoundedStmt: q.listActiveImportedKeyIDsBoundedStmt,
+		listActiveIssuedKeyIDsBoundedStmt:   q.listActiveIssuedKeyIDsBoundedStmt,
+		listImportedAPIKeysStmt:             q.listImportedAPIKeysStmt,
+		listIssuedAPIKeysByNetworkStmt:      q.listIssuedAPIKeysByNetworkStmt,
+		revokeImportedAPIKeyStmt:            q.revokeImportedAPIKeyStmt,
+		revokeIssuedAPIKeyStmt:              q.revokeIssuedAPIKeyStmt,
+		updateImportedAPIKeyLastUsedStmt:    q.updateImportedAPIKeyLastUsedStmt,
+		updateImportedAPIKeyMetadataStmt:    q.updateImportedAPIKeyMetadataStmt,
+		updateIssuedAPIKeyStmt:              q.updateIssuedAPIKeyStmt,
+		updateIssuedAPIKeyLastUsedStmt:      q.updateIssuedAPIKeyLastUsedStmt,
 	}
 }

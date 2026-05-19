@@ -40,6 +40,7 @@ human-readable message.
 | `parent_key_invalid`          | 401  | `UNAUTHENTICATED`     | Parent key validation failed.                                              |
 | `signature_invalid`           | 401  | `UNAUTHENTICATED`     | Signature verification failed.                                             |
 | `unauthorized`                | 401  | `UNAUTHENTICATED`     | The request could not be authorized                                        |
+| `api_key_quota_exceeded`      | 402  | `PERMISSION_DENIED`   | The API key quota for the current plan has been reached.                   |
 | `forbidden`                   | 403  | `PERMISSION_DENIED`   | The requested action was forbidden                                         |
 | `ip_not_allowed`              | 403  | `PERMISSION_DENIED`   | The request IP is not allowed for this API key.                            |
 | `payment_required`            | 403  | `PERMISSION_DENIED`   | The feature is not available and requires payment.                         |

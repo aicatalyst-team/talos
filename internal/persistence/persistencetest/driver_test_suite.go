@@ -64,6 +64,7 @@ func RunDriverTestSuite(t *testing.T, driver persistence.Persister, nid uuid.UUI
 	t.Run("InitializeIdempotency", suite.TestInitializeIdempotency)
 	t.Run("InitializeNetworkIdempotency", suite.TestInitializeNetworkIdempotency)
 	t.Run("BatchUpdateLastUsed", suite.TestBatchUpdateLastUsed)
+	t.Run("CountActiveAPIKeysUpTo", suite.TestCountActiveAPIKeysUpTo)
 }
 
 // ctx returns the test context for test operations with NID already set
@@ -2368,6 +2369,66 @@ func (s *DriverTestSuite) TestBatchUpdateLastUsed(t *testing.T) {
 
 		err = s.driver.BatchUpdateImportedAPIKeyLastUsed(s.ctx(), []string{})
 		require.NoError(t, err)
+	})
+}
+
+// TestCountActiveAPIKeysUpTo tests the bounded count used for quota enforcement.
+// The count combines active issued and imported keys, skips revoked ones, and
+// caps the returned value at the supplied limit.
+func (s *DriverTestSuite) TestCountActiveAPIKeysUpTo(t *testing.T) {
+	nid := s.nid.String()
+
+	t.Run("counts active issued and imported keys, skips revoked", func(t *testing.T) {
+		baseline, err := s.driver.CountActiveAPIKeysUpTo(s.ctx(), 1_000)
+		require.NoError(t, err)
+
+		for i := range 3 {
+			keyID := uuid.Must(uuid.NewV4()).String()
+			_, err := s.createAPIKey(newCreateParams(keyID, fmt.Sprintf("Count Issued %d", i), "count-owner", []string{}))
+			require.NoError(t, err)
+		}
+
+		for i := range 2 {
+			rawKey := fmt.Sprintf("count_imported_%d_%s", i, uuid.Must(uuid.NewV4()).String())
+			keyID := hashImportedKeyID(rawKey, nid)
+			_, err := s.createImportedAPIKey(persistencetypes.CreateImportedKeyParams{
+				KeyID:   keyID,
+				ActorID: "count-owner",
+				Name:    fmt.Sprintf("Count Imported %d", i),
+				Scopes:  json.RawMessage("[]"),
+				Status:  int32(talosv2alpha1.KeyStatus_KEY_STATUS_ACTIVE),
+			})
+			require.NoError(t, err)
+		}
+
+		revokedID := uuid.Must(uuid.NewV4()).String()
+		_, err = s.createAPIKey(newCreateParams(revokedID, "Revoked", "count-owner", []string{}))
+		require.NoError(t, err)
+		require.NoError(t, s.revokeAPIKey(revokedID))
+
+		count, err := s.driver.CountActiveAPIKeysUpTo(s.ctx(), 1_000)
+		require.NoError(t, err)
+		assert.Equal(t, baseline+5, count, "should count 3 issued + 2 imported, ignore 1 revoked")
+	})
+
+	t.Run("limit caps the result", func(t *testing.T) {
+		baseline, err := s.driver.CountActiveAPIKeysUpTo(s.ctx(), 1_000)
+		require.NoError(t, err)
+		require.Greater(t, baseline, int64(1), "previous subtests must have produced enough keys to test capping")
+
+		capped, err := s.driver.CountActiveAPIKeysUpTo(s.ctx(), 1)
+		require.NoError(t, err)
+		assert.Equal(t, int64(1), capped, "should cap at limit=1")
+	})
+
+	t.Run("zero or negative limit returns zero", func(t *testing.T) {
+		count, err := s.driver.CountActiveAPIKeysUpTo(s.ctx(), 0)
+		require.NoError(t, err)
+		assert.Equal(t, int64(0), count)
+
+		count, err = s.driver.CountActiveAPIKeysUpTo(s.ctx(), -5)
+		require.NoError(t, err)
+		assert.Equal(t, int64(0), count)
 	})
 }
 

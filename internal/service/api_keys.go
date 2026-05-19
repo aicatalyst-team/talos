@@ -72,6 +72,7 @@ type ConfigProvider interface {
 	String(ctx context.Context, key talosconfig.Key) string
 	Strings(ctx context.Context, key talosconfig.Key) []string
 	Duration(ctx context.Context, key talosconfig.Key) time.Duration
+	Int(ctx context.Context, key talosconfig.Key) int
 }
 
 // Admin implements a simplified admin service
@@ -195,6 +196,39 @@ func normalizeVisibility(v talosv2alpha1.KeyVisibility) int32 {
 	return int32(talosv2alpha1.KeyVisibility_KEY_VISIBILITY_SECRET)
 }
 
+// enforceAPIKeyQuota rejects a request when creating extra new keys would push
+// the tenant past the plan-allotted maximum. A cap of 0 (or absent) means no
+// enforcement: paid tiers leave the key unset and metered usage handles
+// overages.
+//
+// Enforcement is best-effort: the count query runs outside the insert
+// transaction, so under concurrent issuance the live key count may briefly
+// exceed the cap by up to N-1 keys, where N is the burst concurrency. The
+// next request that observes the over-cap state is rejected, so the breach
+// is transient. For hard limits use metered billing instead of this quota.
+func (s *Admin) enforceAPIKeyQuota(ctx context.Context, extra int64) error {
+	quotaCap := int64(s.provider.Int(ctx, talosconfig.KeyQuotaAPIKeysMax))
+	if quotaCap <= 0 {
+		return nil
+	}
+	if extra <= 0 {
+		extra = 1
+	}
+	// CountActiveAPIKeysUpTo stops scanning once the cap is reached, so the
+	// query never returns more than `quotaCap` rows even on very large tables.
+	count, err := s.driver.CountActiveAPIKeysUpTo(ctx, quotaCap)
+	if err != nil {
+		return handleDBError(err, apiKeyKindIssued, "count active API keys")
+	}
+	if count+extra > quotaCap {
+		return errdef.ErrAPIKeyQuotaExceeded().
+			WithReasonf("the current plan permits up to %d active API keys", quotaCap).
+			WithDetail("limit", quotaCap).
+			WithDetail("current_usage", count)
+	}
+	return nil
+}
+
 func visibilityLabel(v talosv2alpha1.KeyVisibility) string {
 	if v == talosv2alpha1.KeyVisibility_KEY_VISIBILITY_PUBLIC {
 		return "public"
@@ -214,6 +248,10 @@ func (s *Admin) IssueAPIKey(ctx context.Context, req *talosv2alpha1.IssueAPIKeyR
 	// Validate and normalize request using validation package
 	normalized, err := validation.ValidateAndNormalizeIssueRequest(req, s.provider.Duration(ctx, talosconfig.KeyCredentialsAPIKeysDefaultTTL), s.provider.Duration(ctx, talosconfig.KeyCredentialsAPIKeysMaxTTL))
 	if err != nil {
+		return nil, err
+	}
+
+	if err := s.enforceAPIKeyQuota(ctx, 1); err != nil {
 		return nil, err
 	}
 
@@ -1103,6 +1141,10 @@ func (s *Admin) ImportAPIKey(ctx context.Context, req *talosv2alpha1.ImportAPIKe
 		return nil, errdef.FailedPrecondition("cannot import key: format conflicts with derived token pattern")
 	}
 
+	if err := s.enforceAPIKeyQuota(ctx, 1); err != nil {
+		return nil, err
+	}
+
 	// Generate deterministic key ID
 	nid := contextx.NetworkIDFromContext(ctx).String()
 	keyID := crypto.HashImportedAPIKey(normalized.RawKey, nid)
@@ -1286,6 +1328,25 @@ func (s *Admin) BatchImportAPIKeys(ctx context.Context, req *talosv2alpha1.Batch
 				Visibility:      normalizeVisibility(keyReq.GetVisibility()),
 			},
 		})
+	}
+
+	// Cap enforcement: trim candidates that would exceed the plan-allotted
+	// maximum. The first headroom candidates proceed; the rest are reported as
+	// per-item quota errors so the AIP-231 batch contract is preserved.
+	if quotaCap := int64(s.provider.Int(ctx, talosconfig.KeyQuotaAPIKeysMax)); quotaCap > 0 && len(candidates) > 0 {
+		current, countErr := s.driver.CountActiveAPIKeysUpTo(ctx, quotaCap)
+		if countErr != nil {
+			return nil, handleDBError(countErr, apiKeyKindImported, "count active API keys")
+		}
+		headroom := max(quotaCap-current, 0)
+		if int64(len(candidates)) > headroom {
+			rejected := candidates[headroom:]
+			reason := fmt.Sprintf("the current plan permits up to %d active API keys", quotaCap)
+			for _, c := range rejected {
+				results[c.index] = batchImportErrorResult(c.index, talosv2alpha1.BatchImportErrorCode_BATCH_IMPORT_ERROR_FAILED_PRECONDITION, reason)
+			}
+			candidates = candidates[:headroom]
+		}
 	}
 
 	// --- Phase 2: Execute the batch insert for all valid candidates ---

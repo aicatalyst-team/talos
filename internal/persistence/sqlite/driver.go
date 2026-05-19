@@ -390,6 +390,38 @@ func (d *Driver) GetExpiredIssuedAPIKeys(ctx context.Context, limit int32) (resu
 	return d.q.GetExpiredIssuedAPIKeys(ctx, networkID, int32(talosv2alpha1.KeyStatus_KEY_STATUS_ACTIVE), int64(limit))
 }
 
+// CountActiveAPIKeysUpTo returns the number of non-revoked API keys
+// (issued + imported combined) for the current network, capped at limit.
+// Used for quota enforcement; the query is bounded so it never scans more
+// than 2*limit rows. The result is min(actual_count, limit).
+func (d *Driver) CountActiveAPIKeysUpTo(ctx context.Context, limit int64) (count int64, err error) {
+	ctx, span := tracing.Start(ctx, "persistence.CountActiveAPIKeysUpTo",
+		attribute.Int64("limit", limit),
+	)
+	defer otelx.End(span, &err)
+
+	if limit <= 0 {
+		return 0, nil
+	}
+
+	activeStatus := int32(talosv2alpha1.KeyStatus_KEY_STATUS_ACTIVE)
+
+	issued, err := d.q.ListActiveIssuedKeyIDsBounded(ctx, networkID, activeStatus, limit)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+	issuedCount := int64(len(issued))
+	if issuedCount >= limit {
+		return limit, nil
+	}
+
+	imported, err := d.q.ListActiveImportedKeyIDsBounded(ctx, networkID, activeStatus, limit-issuedCount)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+	return issuedCount + int64(len(imported)), nil
+}
+
 // ExpireIssuedAPIKeys marks up to 'limit' expired API keys as expired (batched for scalability).
 // Returns the number of keys that were expired.
 func (d *Driver) ExpireIssuedAPIKeys(ctx context.Context, limit int32) (rowsAffected int64, err error) {

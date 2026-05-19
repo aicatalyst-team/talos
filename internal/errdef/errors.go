@@ -269,6 +269,19 @@ func ErrTooManyRequests() *herodot.DefaultError {
 	}
 }
 
+// ErrAPIKeyQuotaExceeded is returned when issuing or importing an API key would
+// exceed the tenant's plan-allotted maximum (quota.api_keys_max). HTTP 402
+// Payment Required signals that upgrading the plan removes the limit.
+func ErrAPIKeyQuotaExceeded() *herodot.DefaultError {
+	return &herodot.DefaultError{
+		IDField:       "api_key_quota_exceeded",
+		CodeField:     http.StatusPaymentRequired,
+		StatusField:   http.StatusText(http.StatusPaymentRequired),
+		ErrorField:    "The API key quota for the current plan has been reached.",
+		GRPCCodeField: codes.PermissionDenied,
+	}
+}
+
 // Helper functions for creating contextual errors.
 
 // NotFound creates a 404 error with a resource-specific reason.

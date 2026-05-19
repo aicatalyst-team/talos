@@ -170,6 +170,11 @@ var (
 	// KeyLastUsedNumWorkers is the number of goroutines processing last-used batches.
 	// Immutable: requires server restart to change.
 	KeyLastUsedNumWorkers = Key{s: "last_used.num_workers"}
+
+	// KeyQuotaAPIKeysMax is the maximum number of non-revoked API keys a tenant
+	// may hold (issued + imported). Set by the platform config pipeline from the
+	// project's plan; absent for metered tiers. Hot-reloadable.
+	KeyQuotaAPIKeysMax = Key{s: "quota.api_keys_max"}
 )
 
 // reviewed - @aeneasr - 2026-03-25

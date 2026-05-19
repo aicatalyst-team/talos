@@ -75,6 +75,12 @@ type Persister interface {
 	// ExpireIssuedAPIKeys marks expired API keys as expired in batches.
 	ExpireIssuedAPIKeys(ctx context.Context, limit int32) (int64, error)
 
+	// CountActiveAPIKeysUpTo returns the number of non-revoked API keys
+	// (issued + imported combined) for the current network, capped at limit.
+	// Used for quota enforcement (quota.api_keys_max). Bounded; the query
+	// never scans more than 2*limit rows. Returns at most limit.
+	CountActiveAPIKeysUpTo(ctx context.Context, limit int64) (int64, error)
+
 	// Imported Key operations
 
 	// CreateImportedAPIKey creates a record for an externally-issued API key.
