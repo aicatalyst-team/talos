@@ -15,7 +15,7 @@ import (
 	"fmt"
 )
 
-// BatchImportErrorCode BatchImportErrorCode classifies per-item batch import failures.   - BATCH_IMPORT_ERROR_UNSPECIFIED: No error (import succeeded)  - BATCH_IMPORT_ERROR_INVALID_ARGUMENT: The key data is malformed or missing required fields  - BATCH_IMPORT_ERROR_ALREADY_EXISTS: A key with this identifier already exists  - BATCH_IMPORT_ERROR_FAILED_PRECONDITION: State conflict prevents the import  - BATCH_IMPORT_ERROR_INTERNAL: Server error during import
+// BatchImportErrorCode BatchImportErrorCode classifies per-item batch import failures.   - BATCH_IMPORT_ERROR_UNSPECIFIED: No error (import succeeded)  - BATCH_IMPORT_ERROR_INVALID_ARGUMENT: The key data is malformed or missing required fields  - BATCH_IMPORT_ERROR_ALREADY_EXISTS: A key with this identifier already exists  - BATCH_IMPORT_ERROR_FAILED_PRECONDITION: State conflict prevents the import  - BATCH_IMPORT_ERROR_INTERNAL: Server error during import  - BATCH_IMPORT_ERROR_RESOURCE_EXHAUSTED: Per-tenant quota cap reached
 type BatchImportErrorCode string
 
 // List of BatchImportErrorCode
@@ -25,6 +25,7 @@ const (
 	BATCHIMPORTERRORCODE_BATCH_IMPORT_ERROR_ALREADY_EXISTS      BatchImportErrorCode = "BATCH_IMPORT_ERROR_ALREADY_EXISTS"
 	BATCHIMPORTERRORCODE_BATCH_IMPORT_ERROR_FAILED_PRECONDITION BatchImportErrorCode = "BATCH_IMPORT_ERROR_FAILED_PRECONDITION"
 	BATCHIMPORTERRORCODE_BATCH_IMPORT_ERROR_INTERNAL            BatchImportErrorCode = "BATCH_IMPORT_ERROR_INTERNAL"
+	BATCHIMPORTERRORCODE_BATCH_IMPORT_ERROR_RESOURCE_EXHAUSTED  BatchImportErrorCode = "BATCH_IMPORT_ERROR_RESOURCE_EXHAUSTED"
 )
 
 // All allowed values of BatchImportErrorCode enum
@@ -34,6 +35,7 @@ var AllowedBatchImportErrorCodeEnumValues = []BatchImportErrorCode{
 	"BATCH_IMPORT_ERROR_ALREADY_EXISTS",
 	"BATCH_IMPORT_ERROR_FAILED_PRECONDITION",
 	"BATCH_IMPORT_ERROR_INTERNAL",
+	"BATCH_IMPORT_ERROR_RESOURCE_EXHAUSTED",
 }
 
 func (v *BatchImportErrorCode) UnmarshalJSON(src []byte) error {

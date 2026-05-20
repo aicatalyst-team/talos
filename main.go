@@ -9,7 +9,7 @@ import (
 
 	"github.com/ory/x/cmdx"
 
-	"github.com/ory-corp/talos/cmd"
+	"github.com/ory/talos/cmd"
 )
 
 func main() {

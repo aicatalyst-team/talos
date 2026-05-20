@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/ory-corp/talos/config.schema.json",
+  "$id": "https://github.com/ory/talos/config.schema.json",
   "title": "Ory Talos Configuration",
   "description": "Configuration schema for Ory Talos (OSS and Enterprise Edition). Fields marked with 'x-license-required: true' require an Enterprise license.",
   "type": "object",
@@ -76,16 +76,7 @@
                   "description": "A list of methods the client is allowed to use with cross-domain requests.",
                   "items": {
                     "type": "string",
-                    "enum": [
-                      "GET",
-                      "HEAD",
-                      "POST",
-                      "PUT",
-                      "DELETE",
-                      "CONNECT",
-                      "TRACE",
-                      "PATCH"
-                    ]
+                    "enum": ["GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "TRACE", "PATCH"]
                   },
                   "uniqueItems": true,
                   "default": ["GET", "POST", "PUT", "PATCH", "DELETE"]
@@ -137,7 +128,14 @@
               "title": "Client IP Source",
               "description": "Determines which HTTP header or connection property is used to resolve the client IP for IP restriction checks. Must match your infrastructure topology. Default (unspecified) uses the TCP remote address. Hot-reloadable: read dynamically per request.",
               "type": "string",
-              "enum": ["CLIENT_IP_SOURCE_UNSPECIFIED", "CLIENT_IP_SOURCE_REMOTE_ADDR", "CLIENT_IP_SOURCE_CF_CONNECTING_IP", "CLIENT_IP_SOURCE_X_FORWARDED_FOR", "CLIENT_IP_SOURCE_X_REAL_IP", "CLIENT_IP_SOURCE_TRUE_CLIENT_IP"],
+              "enum": [
+                "CLIENT_IP_SOURCE_UNSPECIFIED",
+                "CLIENT_IP_SOURCE_REMOTE_ADDR",
+                "CLIENT_IP_SOURCE_CF_CONNECTING_IP",
+                "CLIENT_IP_SOURCE_X_FORWARDED_FOR",
+                "CLIENT_IP_SOURCE_X_REAL_IP",
+                "CLIENT_IP_SOURCE_TRUE_CLIENT_IP"
+              ],
               "default": "CLIENT_IP_SOURCE_UNSPECIFIED"
             },
             "trust_forwarded_host": {

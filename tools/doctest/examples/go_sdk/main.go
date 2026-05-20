@@ -8,7 +8,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	client "github.com/ory-corp/talos/internal/client/generated"
+	client "github.com/ory/talos/internal/client/generated"
 )
 
 var (

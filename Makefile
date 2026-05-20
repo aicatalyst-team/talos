@@ -5,7 +5,7 @@ BINARY_NAME=talos
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 COMMIT ?= $(shell git rev-parse HEAD 2>/dev/null || echo "unknown")
 BUILD_TIME ?= $(shell date -u '+%Y-%m-%d_%H:%M:%S')
-LDFLAGS := -ldflags="-w -s -X github.com/ory-corp/talos/internal/version.Version=$(VERSION) -X github.com/ory-corp/talos/internal/version.Commit=$(COMMIT) -X github.com/ory-corp/talos/internal/version.BuildTime=$(BUILD_TIME)"
+LDFLAGS := -ldflags="-w -s -X github.com/ory/talos/internal/version.Version=$(VERSION) -X github.com/ory/talos/internal/version.Commit=$(COMMIT) -X github.com/ory/talos/internal/version.BuildTime=$(BUILD_TIME)"
 
 # Tools (run from go.mod)
 BUF := go run github.com/bufbuild/buf/cmd/buf@v1.59.0

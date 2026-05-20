@@ -24,15 +24,16 @@ import (
 )
 
 // GenerateSigningKeyJWKS generates a new signing key and returns it as a JWKS
-// JSON string containing the private key material. The key includes the "sig"
-// usage, the specified algorithm, and a key ID.
+// JSON string containing the private key material, along with the assigned
+// key ID. The key includes the "sig" usage, the specified algorithm, and the
+// returned key ID.
 //
 // If alg is empty, EdDSA is used. Supported values: "EdDSA", "RS256".
 //
 // If kid is empty, the key ID is derived from a SHA-256 thumbprint of the
 // public key. If kid is non-empty, it is used verbatim with no format
 // validation, matching talos's lookup rules.
-func GenerateSigningKeyJWKS(alg, kid string) (string, error) {
+func GenerateSigningKeyJWKS(alg, kid string) (jwks, assignedKid string, err error) {
 	if alg == "" {
 		alg = "EdDSA"
 	}
@@ -45,51 +46,58 @@ func GenerateSigningKeyJWKS(alg, kid string) (string, error) {
 	case "EdDSA":
 		_, priv, err := ed25519.GenerateKey(rand.Reader)
 		if err != nil {
-			return "", errors.Wrap(err, "generate Ed25519 key pair")
+			return "", "", errors.Wrap(err, "generate Ed25519 key pair")
 		}
 		rawKey = priv
 		sigAlg = jwa.EdDSA()
 	case "RS256":
 		priv, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
-			return "", errors.Wrap(err, "generate RSA key pair")
+			return "", "", errors.Wrap(err, "generate RSA key pair")
 		}
 		rawKey = priv
 		sigAlg = jwa.RS256()
 	default:
-		return "", errors.Errorf("unsupported signing algorithm: %s (must be EdDSA or RS256)", alg)
+		return "", "", errors.Errorf("unsupported signing algorithm: %s (must be EdDSA or RS256)", alg)
 	}
 
 	key, err := jwk.Import(rawKey)
 	if err != nil {
-		return "", errors.Wrap(err, "import key as JWK")
+		return "", "", errors.Wrap(err, "import key as JWK")
 	}
 
-	if kid != "" {
-		if err := key.Set(jwk.KeyIDKey, kid); err != nil {
-			return "", errors.Wrap(err, "set key ID")
+	finalKid := kid
+	if finalKid == "" {
+		finalKid, err = computeThumbprintKeyID(key)
+		if err != nil {
+			return "", "", err
 		}
-	} else if err := setThumbprintKeyID(key); err != nil {
-		return "", err
+	}
+	if err := key.Set(jwk.KeyIDKey, finalKid); err != nil {
+		return "", "", errors.Wrap(err, "set key ID")
 	}
 	if err := key.Set(jwk.AlgorithmKey, sigAlg); err != nil {
-		return "", errors.Wrap(err, "set algorithm")
+		return "", "", errors.Wrap(err, "set algorithm")
 	}
 	if err := key.Set(jwk.KeyUsageKey, "sig"); err != nil {
-		return "", errors.Wrap(err, "set key usage")
+		return "", "", errors.Wrap(err, "set key usage")
 	}
 
 	keySet := jwk.NewSet()
 	if err := keySet.AddKey(key); err != nil {
-		return "", errors.Wrap(err, "add key to set")
+		return "", "", errors.Wrap(err, "add key to set")
 	}
 
 	data, err := json.Marshal(keySet)
 	if err != nil {
-		return "", errors.Wrap(err, "marshal JWKS")
+		return "", "", errors.Wrap(err, "marshal JWKS")
 	}
 
-	return injectCreatedAt(string(data), time.Now().UTC())
+	withCreatedAt, err := injectCreatedAt(string(data), time.Now().UTC())
+	if err != nil {
+		return "", "", err
+	}
+	return withCreatedAt, finalKid, nil
 }
 
 // ExtractSigningKeyID returns the "kid" of the first key in a JWKS JSON
@@ -128,23 +136,22 @@ func GenerateHMACSecret() HMACSecret {
 	}
 }
 
-// setThumbprintKeyID computes a SHA-256 thumbprint of the public key and sets
-// it as the key ID. This matches the format used by talos's CLI key generation.
-func setThumbprintKeyID(key jwk.Key) error {
+// computeThumbprintKeyID returns a SHA-256 thumbprint of the public key,
+// encoded as a URL-safe base64 string. This matches the format used by talos's
+// CLI key generation.
+func computeThumbprintKeyID(key jwk.Key) (string, error) {
 	pubKey, err := key.PublicKey()
 	if err != nil {
-		return errors.Wrap(err, "extract public key for thumbprint")
+		return "", errors.Wrap(err, "extract public key for thumbprint")
 	}
 
 	jsonBytes, err := json.Marshal(pubKey)
 	if err != nil {
-		return errors.Wrap(err, "marshal key for thumbprint")
+		return "", errors.Wrap(err, "marshal key for thumbprint")
 	}
 
 	hash := sha256.Sum256(jsonBytes)
-	kid := base64.URLEncoding.EncodeToString(hash[:])
-
-	return errors.Wrap(key.Set(jwk.KeyIDKey, kid), "set key ID")
+	return base64.URLEncoding.EncodeToString(hash[:]), nil
 }
 
 // injectCreatedAt adds a created_at timestamp to each key in a JWKS JSON string.

@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/crypto"
-	"github.com/ory-corp/talos/internal/testutil"
+	"github.com/ory/talos/internal/crypto"
+	"github.com/ory/talos/internal/testutil"
 
 	"github.com/ory/x/configx"
 )

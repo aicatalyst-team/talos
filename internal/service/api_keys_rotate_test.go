@@ -11,7 +11,7 @@ import (
 
 	"github.com/ory/herodot"
 
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // TestRotateIssuedAPIKey_RejectsRevokedKey verifies that rotating an already-revoked

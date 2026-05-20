@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	client "github.com/ory-corp/talos/internal/client/generated"
+	client "github.com/ory/talos/internal/client/generated"
 )
 
 // SDK Client Helpers
@@ -19,7 +19,7 @@ import (
 // automatic error handling, and cleaner test code.
 //
 // Generated SDK location:
-//   import client "github.com/ory-corp/talos/internal/client/generated"
+//   import client "github.com/ory/talos/internal/client/generated"
 
 // closeBody schedules the HTTP response body for cleanup if non-nil.
 func (s *APIKeyE2ETestSuite) closeBody(httpResp *http.Response) {

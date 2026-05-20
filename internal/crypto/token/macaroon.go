@@ -14,7 +14,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"gopkg.in/macaroon.v2"
 
-	"github.com/ory-corp/talos/internal/tracing"
+	"github.com/ory/talos/internal/tracing"
 
 	"github.com/ory/x/otelx"
 )

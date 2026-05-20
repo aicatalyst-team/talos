@@ -10,7 +10,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/ory-corp/talos/internal/contextx"
+	"github.com/ory/talos/internal/contextx"
 )
 
 // TracerName is the name of the Talos OTEL tracer.

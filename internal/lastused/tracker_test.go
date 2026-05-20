@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/contextx"
+	"github.com/ory/talos/internal/contextx"
 )
 
 // recorder is a test Flusher that records all batch calls. It reads NID from

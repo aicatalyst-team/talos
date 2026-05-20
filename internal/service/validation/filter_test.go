@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/service/validation"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	"github.com/ory/talos/internal/service/validation"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 func TestParseListFilter(t *testing.T) {

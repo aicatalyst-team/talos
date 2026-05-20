@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/ory-corp/talos/internal/duration"
+	"github.com/ory/talos/internal/duration"
 )
 
 // maxRequestBodySize bounds the io.ReadAll in Decode to prevent unbounded

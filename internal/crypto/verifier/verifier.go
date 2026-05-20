@@ -7,9 +7,9 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	internalcrypto "github.com/ory-corp/talos/internal/crypto"
-	"github.com/ory-corp/talos/internal/crypto/token"
-	"github.com/ory-corp/talos/internal/errdef"
+	internalcrypto "github.com/ory/talos/internal/crypto"
+	"github.com/ory/talos/internal/crypto/token"
+	"github.com/ory/talos/internal/errdef"
 )
 
 // Verifier handles token verification.

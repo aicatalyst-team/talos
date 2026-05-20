@@ -7,14 +7,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/pkg/jwkgen"
+	"github.com/ory/talos/pkg/jwkgen"
 )
 
 func TestGenerateSigningKeyJWKS_DefaultKidIsThumbprint(t *testing.T) {
 	t.Parallel()
 
-	raw, err := jwkgen.GenerateSigningKeyJWKS("", "")
+	raw, kid, err := jwkgen.GenerateSigningKeyJWKS("", "")
 	require.NoError(t, err)
+	assert.NotEmpty(t, kid, "empty kid argument must fall back to thumbprint kid")
 
 	var parsed struct {
 		Keys []map[string]any `json:"keys"`
@@ -23,14 +24,15 @@ func TestGenerateSigningKeyJWKS_DefaultKidIsThumbprint(t *testing.T) {
 	require.Len(t, parsed.Keys, 1)
 	assert.Equal(t, "EdDSA", parsed.Keys[0]["alg"])
 	assert.Equal(t, "sig", parsed.Keys[0]["use"])
-	assert.NotEmpty(t, parsed.Keys[0]["kid"], "empty kid argument must fall back to thumbprint kid")
+	assert.Equal(t, kid, parsed.Keys[0]["kid"])
 }
 
 func TestGenerateSigningKeyJWKS_ExplicitKidIsPreserved(t *testing.T) {
 	t.Parallel()
 
-	raw, err := jwkgen.GenerateSigningKeyJWKS("", "my-custom-kid")
+	raw, kid, err := jwkgen.GenerateSigningKeyJWKS("", "my-custom-kid")
 	require.NoError(t, err)
+	assert.Equal(t, "my-custom-kid", kid)
 
 	var parsed struct {
 		Keys []map[string]any `json:"keys"`
@@ -43,8 +45,9 @@ func TestGenerateSigningKeyJWKS_ExplicitKidIsPreserved(t *testing.T) {
 func TestGenerateSigningKeyJWKS_RS256(t *testing.T) {
 	t.Parallel()
 
-	raw, err := jwkgen.GenerateSigningKeyJWKS("RS256", "")
+	raw, kid, err := jwkgen.GenerateSigningKeyJWKS("RS256", "")
 	require.NoError(t, err)
+	assert.NotEmpty(t, kid)
 
 	var parsed struct {
 		Keys []map[string]any `json:"keys"`
@@ -52,13 +55,13 @@ func TestGenerateSigningKeyJWKS_RS256(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(raw), &parsed))
 	require.Len(t, parsed.Keys, 1)
 	assert.Equal(t, "RS256", parsed.Keys[0]["alg"])
-	assert.NotEmpty(t, parsed.Keys[0]["kid"])
+	assert.Equal(t, kid, parsed.Keys[0]["kid"])
 }
 
 func TestGenerateSigningKeyJWKS_UnsupportedAlgorithmErrors(t *testing.T) {
 	t.Parallel()
 
-	_, err := jwkgen.GenerateSigningKeyJWKS("ES256", "")
+	_, _, err := jwkgen.GenerateSigningKeyJWKS("ES256", "")
 	require.Error(t, err)
 }
 
@@ -68,7 +71,7 @@ func TestExtractSigningKeyID(t *testing.T) {
 	t.Run("returns the thumbprint kid", func(t *testing.T) {
 		t.Parallel()
 
-		raw, err := jwkgen.GenerateSigningKeyJWKS("", "")
+		raw, _, err := jwkgen.GenerateSigningKeyJWKS("", "")
 		require.NoError(t, err)
 
 		kid, err := jwkgen.ExtractSigningKeyID(raw)
@@ -79,7 +82,7 @@ func TestExtractSigningKeyID(t *testing.T) {
 	t.Run("returns the explicit kid", func(t *testing.T) {
 		t.Parallel()
 
-		raw, err := jwkgen.GenerateSigningKeyJWKS("", "explicit-kid")
+		raw, _, err := jwkgen.GenerateSigningKeyJWKS("", "explicit-kid")
 		require.NoError(t, err)
 
 		kid, err := jwkgen.ExtractSigningKeyID(raw)

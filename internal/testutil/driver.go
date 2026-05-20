@@ -14,9 +14,9 @@ import (
 	migratesqlite "github.com/golang-migrate/migrate/v4/database/sqlite"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 
-	"github.com/ory-corp/talos/internal/persistence/sqlite"
+	"github.com/ory/talos/internal/persistence/sqlite"
 
-	"github.com/ory-corp/talos/internal/persistence/migrations"
+	"github.com/ory/talos/internal/persistence/migrations"
 )
 
 // contextGetter is an interface for testing.TB implementations that support Context().

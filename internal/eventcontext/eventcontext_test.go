@@ -16,9 +16,9 @@ import (
 	"github.com/ory/x/otelx"
 	orysemconv "github.com/ory/x/otelx/semconv"
 
-	"github.com/ory-corp/talos/internal/contextx"
-	"github.com/ory-corp/talos/internal/eventcontext"
-	"github.com/ory-corp/talos/internal/events"
+	"github.com/ory/talos/internal/contextx"
+	"github.com/ory/talos/internal/eventcontext"
+	"github.com/ory/talos/internal/events"
 )
 
 func TestNewFromContext(t *testing.T) {

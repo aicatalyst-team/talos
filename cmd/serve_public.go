@@ -3,8 +3,8 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/ory-corp/talos/commercial/config"
-	"github.com/ory-corp/talos/internal/boot"
+	"github.com/ory/talos/commercial/config"
+	"github.com/ory/talos/internal/boot"
 )
 
 // newServePublicCmd creates the serve public command.

@@ -9,11 +9,11 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/ory-corp/talos/internal/clientip"
-	"github.com/ory-corp/talos/internal/errdef"
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	"github.com/ory-corp/talos/internal/persistence/sqlutil"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	"github.com/ory/talos/internal/clientip"
+	"github.com/ory/talos/internal/errdef"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	"github.com/ory/talos/internal/persistence/sqlutil"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // Type Conversion Helpers

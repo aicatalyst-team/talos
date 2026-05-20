@@ -25,7 +25,7 @@ import (
 
 	orysemconv "github.com/ory/x/otelx/semconv"
 
-	"github.com/ory-corp/talos/pkg/semconv"
+	"github.com/ory/talos/pkg/semconv"
 )
 
 // EventType is an alias for orysemconv.Event to maintain backward compatibility

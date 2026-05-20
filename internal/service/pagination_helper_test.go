@@ -12,12 +12,12 @@ import (
 
 	"github.com/ory/herodot"
 
-	"github.com/ory-corp/talos/internal/contextx"
-	"github.com/ory-corp/talos/internal/crypto"
+	"github.com/ory/talos/internal/contextx"
+	"github.com/ory/talos/internal/crypto"
 
-	"github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/pagination"
-	"github.com/ory-corp/talos/internal/testutil"
+	"github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/pagination"
+	"github.com/ory/talos/internal/testutil"
 
 	"github.com/ory/x/configx"
 )

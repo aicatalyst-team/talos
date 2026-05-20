@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/persistence/migrations"
-	"github.com/ory-corp/talos/internal/persistence/persistmodel"
-	"github.com/ory-corp/talos/internal/persistence/sqlite/sqliteshared"
+	"github.com/ory/talos/internal/persistence/migrations"
+	"github.com/ory/talos/internal/persistence/persistmodel"
+	"github.com/ory/talos/internal/persistence/sqlite/sqliteshared"
 )
 
 func TestNewDriver_StripsSQLitePrefixes(t *testing.T) {

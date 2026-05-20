@@ -5,9 +5,9 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/ory-corp/talos/internal/persistence/persistmodel"
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	persistencetypes "github.com/ory-corp/talos/internal/persistence/types"
+	"github.com/ory/talos/internal/persistence/persistmodel"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	persistencetypes "github.com/ory/talos/internal/persistence/types"
 )
 
 // Persister is the interface that all database drivers must implement.

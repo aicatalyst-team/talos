@@ -14,12 +14,12 @@ import (
 	"github.com/ory/herodot"
 	"github.com/ory/x/configx"
 
-	"github.com/ory-corp/talos/internal/contextx"
+	"github.com/ory/talos/internal/contextx"
 
-	"github.com/ory-corp/talos/internal/health"
-	"github.com/ory-corp/talos/internal/testutil"
-	"github.com/ory-corp/talos/internal/version"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	"github.com/ory/talos/internal/health"
+	"github.com/ory/talos/internal/testutil"
+	"github.com/ory/talos/internal/version"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 const exampleHost = "example.com"

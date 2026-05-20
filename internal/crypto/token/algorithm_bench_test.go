@@ -9,7 +9,7 @@ import (
 	"github.com/lestrrat-go/jwx/v3/jwk"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/crypto"
+	"github.com/ory/talos/internal/crypto"
 )
 
 // Benchmark JWT vs Macaroon token operations

@@ -13,7 +13,7 @@ import (
 
 	"github.com/ory/herodot"
 
-	"github.com/ory-corp/talos/internal/errdef"
+	"github.com/ory/talos/internal/errdef"
 )
 
 type noopReporter struct{}

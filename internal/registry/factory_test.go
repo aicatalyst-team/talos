@@ -9,9 +9,9 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	commercialregistry "github.com/ory-corp/talos/commercial/registry"
-	"github.com/ory-corp/talos/internal/testutil"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	commercialregistry "github.com/ory/talos/commercial/registry"
+	"github.com/ory/talos/internal/testutil"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 
 	"github.com/ory/x/configx"
 	"github.com/ory/x/httpx"

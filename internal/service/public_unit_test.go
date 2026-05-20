@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/ory-corp/talos/internal/errdef"
-	"github.com/ory-corp/talos/internal/ratelimit"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	"github.com/ory/talos/internal/errdef"
+	"github.com/ory/talos/internal/ratelimit"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // controlledLimiter is a test-local ratelimit.Limiter whose behaviour is

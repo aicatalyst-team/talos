@@ -87,13 +87,14 @@
       },
       "BatchImportErrorCode": {
         "default": "BATCH_IMPORT_ERROR_UNSPECIFIED",
-        "description": "BatchImportErrorCode classifies per-item batch import failures.\n\n - BATCH_IMPORT_ERROR_UNSPECIFIED: No error (import succeeded)\n - BATCH_IMPORT_ERROR_INVALID_ARGUMENT: The key data is malformed or missing required fields\n - BATCH_IMPORT_ERROR_ALREADY_EXISTS: A key with this identifier already exists\n - BATCH_IMPORT_ERROR_FAILED_PRECONDITION: State conflict prevents the import\n - BATCH_IMPORT_ERROR_INTERNAL: Server error during import",
+        "description": "BatchImportErrorCode classifies per-item batch import failures.\n\n - BATCH_IMPORT_ERROR_UNSPECIFIED: No error (import succeeded)\n - BATCH_IMPORT_ERROR_INVALID_ARGUMENT: The key data is malformed or missing required fields\n - BATCH_IMPORT_ERROR_ALREADY_EXISTS: A key with this identifier already exists\n - BATCH_IMPORT_ERROR_FAILED_PRECONDITION: State conflict prevents the import\n - BATCH_IMPORT_ERROR_INTERNAL: Server error during import\n - BATCH_IMPORT_ERROR_RESOURCE_EXHAUSTED: Per-tenant quota cap reached",
         "enum": [
           "BATCH_IMPORT_ERROR_UNSPECIFIED",
           "BATCH_IMPORT_ERROR_INVALID_ARGUMENT",
           "BATCH_IMPORT_ERROR_ALREADY_EXISTS",
           "BATCH_IMPORT_ERROR_FAILED_PRECONDITION",
-          "BATCH_IMPORT_ERROR_INTERNAL"
+          "BATCH_IMPORT_ERROR_INTERNAL",
+          "BATCH_IMPORT_ERROR_RESOURCE_EXHAUSTED"
         ],
         "type": "string"
       },

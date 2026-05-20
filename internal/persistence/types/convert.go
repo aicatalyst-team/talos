@@ -3,9 +3,9 @@ package persistencetypes
 import (
 	"context"
 
-	"github.com/ory-corp/talos/internal/contextx"
+	"github.com/ory/talos/internal/contextx"
 
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
 )
 
 // ImportedAPIKeyToIssuedAPIKey converts an ImportedApiKey to a db.IssuedApiKey for uniform handling.

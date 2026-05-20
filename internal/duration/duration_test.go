@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/duration"
+	"github.com/ory/talos/internal/duration"
 )
 
 func TestParse(t *testing.T) {

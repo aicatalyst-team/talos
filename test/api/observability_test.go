@@ -4,8 +4,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/testutil"
 
-	client "github.com/ory-corp/talos/internal/client/generated"
-	"github.com/ory-corp/talos/internal/events"
+	client "github.com/ory/talos/internal/client/generated"
+	"github.com/ory/talos/internal/events"
 )
 
 // ---------------------------------------------------------------------------

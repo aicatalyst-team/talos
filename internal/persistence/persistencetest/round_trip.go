@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/crypto"
-	"github.com/ory-corp/talos/internal/persistence/persistmodel"
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	"github.com/ory/talos/internal/crypto"
+	"github.com/ory/talos/internal/persistence/persistmodel"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // errorf is the subset of *testing.T used by compareJSONSnapshot. Accepting

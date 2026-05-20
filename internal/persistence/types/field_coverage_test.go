@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
 )
 
 // assertFieldCount verifies that a struct has the expected number of fields.

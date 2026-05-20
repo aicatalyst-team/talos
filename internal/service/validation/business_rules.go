@@ -8,7 +8,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	"github.com/ory-corp/talos/internal/errdef"
+	"github.com/ory/talos/internal/errdef"
 )
 
 const (

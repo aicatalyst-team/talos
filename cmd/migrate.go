@@ -18,8 +18,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ory-corp/talos/commercial/config"
-	talosconfig "github.com/ory-corp/talos/internal/config"
+	"github.com/ory/talos/commercial/config"
+	talosconfig "github.com/ory/talos/internal/config"
 	"github.com/ory/x/cmdx"
 )
 

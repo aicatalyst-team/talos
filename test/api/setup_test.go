@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	testutiltesting "github.com/ory-corp/talos/internal/testutil/testserver"
+	testutiltesting "github.com/ory/talos/internal/testutil/testserver"
 )
 
 // HTTP API paths

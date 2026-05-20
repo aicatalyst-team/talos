@@ -13,7 +13,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/configschema"
+	"github.com/ory/talos/internal/configschema"
 )
 
 const schemaTypeObject = "object"

@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/ory-corp/talos/internal/cachecontrol"
+	"github.com/ory/talos/internal/cachecontrol"
 )
 
 func TestCacheControl_ContextStorage(t *testing.T) {

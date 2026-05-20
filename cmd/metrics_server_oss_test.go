@@ -13,7 +13,7 @@ import (
 
 	"github.com/ory/herodot"
 
-	"github.com/ory-corp/talos/internal/health"
+	"github.com/ory/talos/internal/health"
 )
 
 // TestOSSMetricsServerHasNoMetricsRoute verifies that the metrics HTTP server

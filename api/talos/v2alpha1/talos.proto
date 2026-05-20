@@ -11,7 +11,7 @@ import "google/protobuf/field_mask.proto";
 import "google/protobuf/empty.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
-option go_package = "github.com/ory-corp/talos/pkg/api/talos/v2alpha1;talosv2alpha1";
+option go_package = "github.com/ory/talos/pkg/api/talos/v2alpha1;talosv2alpha1";
 
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   info: {
@@ -899,6 +899,7 @@ enum BatchImportErrorCode {
   BATCH_IMPORT_ERROR_ALREADY_EXISTS = 2;      // A key with this identifier already exists
   BATCH_IMPORT_ERROR_FAILED_PRECONDITION = 3; // State conflict prevents the import
   BATCH_IMPORT_ERROR_INTERNAL = 4;            // Server error during import
+  BATCH_IMPORT_ERROR_RESOURCE_EXHAUSTED = 5;  // Per-tenant quota cap reached
 }
 
 // BatchImportResult contains the result for one key in a batch import request.

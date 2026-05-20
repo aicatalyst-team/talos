@@ -15,7 +15,7 @@ Thank you for your interest in contributing to Ory Talos!
 
 ```bash
 # Clone the repository
-git clone https://github.com/ory-corp/talos.git
+git clone https://github.com/ory/talos.git
 cd talos
 
 # Install dependencies

@@ -19,25 +19,25 @@ import (
 	"github.com/ory/x/configx"
 	"github.com/ory/x/httpx"
 
-	"github.com/ory-corp/talos/internal/cache"
-	"github.com/ory-corp/talos/internal/clientip"
-	"github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/contextx"
-	"github.com/ory-corp/talos/internal/crypto"
-	"github.com/ory-corp/talos/internal/crypto/token"
+	"github.com/ory/talos/internal/cache"
+	"github.com/ory/talos/internal/clientip"
+	"github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/contextx"
+	"github.com/ory/talos/internal/crypto"
+	"github.com/ory/talos/internal/crypto/token"
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/ory-corp/talos/internal/errdef"
-	"github.com/ory-corp/talos/internal/lastused"
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	"github.com/ory-corp/talos/internal/persistence/sqlite"
+	"github.com/ory/talos/internal/errdef"
+	"github.com/ory/talos/internal/lastused"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	"github.com/ory/talos/internal/persistence/sqlite"
 
-	"github.com/ory-corp/talos/internal/metrics"
-	"github.com/ory-corp/talos/internal/persistence/sqlutil"
-	persistencetypes "github.com/ory-corp/talos/internal/persistence/types"
-	"github.com/ory-corp/talos/internal/testutil"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	"github.com/ory/talos/internal/metrics"
+	"github.com/ory/talos/internal/persistence/sqlutil"
+	persistencetypes "github.com/ory/talos/internal/persistence/types"
+	"github.com/ory/talos/internal/testutil"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // scopesToJSON is a helper that converts []string to json.RawMessage for tests

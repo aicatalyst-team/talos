@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/persistence/persistmodel"
+	"github.com/ory/talos/internal/persistence/persistmodel"
 )
 
 func TestIsMemoryDSN(t *testing.T) {

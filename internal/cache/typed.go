@@ -5,7 +5,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 
-	"github.com/ory-corp/talos/internal/contextx"
+	"github.com/ory/talos/internal/contextx"
 )
 
 // BuildFullKey constructs a cache key with namespace, network ID from context,

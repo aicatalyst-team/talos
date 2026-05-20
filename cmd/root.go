@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	_ "github.com/ory-corp/talos/internal/metrics" // Register Prometheus metrics
-	"github.com/ory-corp/talos/internal/version"
+	_ "github.com/ory/talos/internal/metrics" // Register Prometheus metrics
+	"github.com/ory/talos/internal/version"
 
 	"github.com/ory/x/cmdx"
 )

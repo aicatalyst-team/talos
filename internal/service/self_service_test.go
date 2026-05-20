@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/ory-corp/talos/internal/errdef"
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	"github.com/ory/talos/internal/errdef"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 func dbKeyToVerifyResponseT(t *testing.T, dbKey *db.IssuedApiKey) *talosv2alpha1.VerifyAPIKeyResponse {

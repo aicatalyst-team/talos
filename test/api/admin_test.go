@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	client "github.com/ory-corp/talos/internal/client/generated"
+	client "github.com/ory/talos/internal/client/generated"
 )
 
 // Sentinel errors for concurrent operation tests

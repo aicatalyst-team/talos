@@ -4,9 +4,9 @@ package eventcontext
 import (
 	"context"
 
-	"github.com/ory-corp/talos/internal/contextx"
+	"github.com/ory/talos/internal/contextx"
 
-	"github.com/ory-corp/talos/internal/events"
+	"github.com/ory/talos/internal/events"
 )
 
 // NewFromContext creates an event builder with network ID extracted from context.

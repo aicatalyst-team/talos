@@ -6,8 +6,8 @@ import (
 
 	"google.golang.org/protobuf/types/known/durationpb"
 
-	"github.com/ory-corp/talos/internal/errdef"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	"github.com/ory/talos/internal/errdef"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // CreateKeyRequest represents normalized/validated inputs for creating a key.

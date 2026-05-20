@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/ory-corp/talos/internal/contextx"
-	"github.com/ory-corp/talos/internal/version"
+	"github.com/ory/talos/internal/contextx"
+	"github.com/ory/talos/internal/version"
 )
 
 type versionResponse struct {

@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/persistence/migrations"
-	"github.com/ory-corp/talos/internal/persistence/sqlite"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	"github.com/ory/talos/internal/persistence/migrations"
+	"github.com/ory/talos/internal/persistence/sqlite"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 
 	_ "modernc.org/sqlite" // SQLite driver
 )

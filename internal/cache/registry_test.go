@@ -14,11 +14,11 @@ import (
 	"github.com/ory/x/configx"
 	"github.com/ory/x/httpx"
 
-	commercialregistry "github.com/ory-corp/talos/commercial/registry"
-	"github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/errdef"
-	"github.com/ory-corp/talos/internal/registry"
-	"github.com/ory-corp/talos/internal/testutil"
+	commercialregistry "github.com/ory/talos/commercial/registry"
+	"github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/errdef"
+	"github.com/ory/talos/internal/registry"
+	"github.com/ory/talos/internal/testutil"
 )
 
 // TODO simplify this code

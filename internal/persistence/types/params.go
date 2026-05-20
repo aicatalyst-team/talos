@@ -9,8 +9,8 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	"github.com/ory-corp/talos/internal/persistence/sqlutil"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	"github.com/ory/talos/internal/persistence/sqlutil"
 )
 
 // CreateIssuedAPIKeyParams aggregates all inputs required to create an API key.

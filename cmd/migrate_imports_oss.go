@@ -3,7 +3,7 @@
 package cmd
 
 import (
-	"github.com/ory-corp/talos/internal/persistence/migrations"
+	"github.com/ory/talos/internal/persistence/migrations"
 )
 
 var getMigrationsFS = migrations.GetMigrationsFS

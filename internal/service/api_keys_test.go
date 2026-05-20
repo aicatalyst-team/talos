@@ -25,22 +25,22 @@ import (
 	"github.com/ory/x/configx"
 	"github.com/ory/x/httpx"
 
-	"github.com/ory-corp/talos/internal/cache"
-	"github.com/ory-corp/talos/internal/clientip"
-	"github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/crypto"
-	cryptotoken "github.com/ory-corp/talos/internal/crypto/token"
-	"github.com/ory-corp/talos/internal/errdef"
-	"github.com/ory-corp/talos/internal/events"
-	"github.com/ory-corp/talos/internal/lastused"
-	"github.com/ory-corp/talos/internal/metrics"
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	"github.com/ory-corp/talos/internal/service"
-	"github.com/ory-corp/talos/internal/testutil"
+	"github.com/ory/talos/internal/cache"
+	"github.com/ory/talos/internal/clientip"
+	"github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/crypto"
+	cryptotoken "github.com/ory/talos/internal/crypto/token"
+	"github.com/ory/talos/internal/errdef"
+	"github.com/ory/talos/internal/events"
+	"github.com/ory/talos/internal/lastused"
+	"github.com/ory/talos/internal/metrics"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	"github.com/ory/talos/internal/service"
+	"github.com/ory/talos/internal/testutil"
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // TestIssueAPIKey tests the IssueAPIKey service method

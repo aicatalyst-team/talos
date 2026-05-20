@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/ory-corp/talos/internal/errdef"
+	"github.com/ory/talos/internal/errdef"
 )
 
 // TestHerodotErrorGRPCPassthrough verifies that herodot errors returned by the

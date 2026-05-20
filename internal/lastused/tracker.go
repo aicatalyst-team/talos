@@ -13,7 +13,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"github.com/ory-corp/talos/internal/contextx"
+	"github.com/ory/talos/internal/contextx"
 )
 
 // flushTimeout bounds each batch DB write so a slow or unreachable database

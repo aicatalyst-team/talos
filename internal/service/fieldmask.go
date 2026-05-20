@@ -9,8 +9,8 @@ import (
 	"github.com/cockroachdb/errors"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/ory-corp/talos/internal/errdef"
-	"github.com/ory-corp/talos/internal/service/validation"
+	"github.com/ory/talos/internal/errdef"
+	"github.com/ory/talos/internal/service/validation"
 )
 
 // fieldMask wraps AIP-134 update_mask semantics.

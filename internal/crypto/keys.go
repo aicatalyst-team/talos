@@ -17,7 +17,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.opentelemetry.io/otel/attribute"
 
-	"github.com/ory-corp/talos/internal/tracing"
+	"github.com/ory/talos/internal/tracing"
 
 	"github.com/ory/x/otelx"
 )

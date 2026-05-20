@@ -8,7 +8,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	talosconfig "github.com/ory-corp/talos/internal/config"
+	talosconfig "github.com/ory/talos/internal/config"
 )
 
 // paginationKeyDomain is the domain separator that turns the shared HMAC

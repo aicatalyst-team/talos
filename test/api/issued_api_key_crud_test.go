@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	client "github.com/ory-corp/talos/internal/client/generated"
+	client "github.com/ory/talos/internal/client/generated"
 )
 
 const statusFilterActive = "KEY_STATUS_ACTIVE"

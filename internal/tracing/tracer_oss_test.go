@@ -7,9 +7,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/testutil"
-	"github.com/ory-corp/talos/internal/tracing"
+	"github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/testutil"
+	"github.com/ory/talos/internal/tracing"
 )
 
 // TestInitTracerOSSIsNoop verifies that InitTracer is a no-op in OSS builds

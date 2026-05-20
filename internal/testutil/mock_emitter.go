@@ -8,7 +8,7 @@ import (
 
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/ory-corp/talos/internal/events"
+	"github.com/ory/talos/internal/events"
 )
 
 // MockEmitter is a mock implementation of events.Emitter for testing.

@@ -19,9 +19,9 @@ import (
 	"github.com/ory/x/configx"
 	"github.com/ory/x/httpx"
 
-	talosconfig "github.com/ory-corp/talos/internal/config"
-	internalcrypto "github.com/ory-corp/talos/internal/crypto"
-	"github.com/ory-corp/talos/internal/testutil"
+	talosconfig "github.com/ory/talos/internal/config"
+	internalcrypto "github.com/ory/talos/internal/crypto"
+	"github.com/ory/talos/internal/testutil"
 )
 
 // rsaKeyToJWKSURL serializes an RSA private key into a base64:// JWKS URL.

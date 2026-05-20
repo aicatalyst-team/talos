@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/persistence/persistencetest"
-	"github.com/ory-corp/talos/internal/testutil"
+	"github.com/ory/talos/internal/persistence/persistencetest"
+	"github.com/ory/talos/internal/testutil"
 )
 
 // TestDriverSuite runs the shared driver test suite against the SQLite driver.

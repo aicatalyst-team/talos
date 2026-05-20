@@ -14,7 +14,7 @@ import (
 	"github.com/lestrrat-go/jwx/v3/jwt"
 	"go.opentelemetry.io/otel/attribute"
 
-	"github.com/ory-corp/talos/internal/tracing"
+	"github.com/ory/talos/internal/tracing"
 
 	"github.com/ory/x/otelx"
 )

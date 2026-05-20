@@ -15,9 +15,9 @@ import (
 	"github.com/go-faker/faker/v4"
 	"github.com/gofrs/uuid"
 
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	persistencetypes "github.com/ory-corp/talos/internal/persistence/types"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	persistencetypes "github.com/ory/talos/internal/persistence/types"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // fakerSeed is the deterministic seed used by every fixture builder. A fixed

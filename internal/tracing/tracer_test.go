@@ -6,8 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/testutil"
-	"github.com/ory-corp/talos/internal/tracing"
+	"github.com/ory/talos/internal/testutil"
+	"github.com/ory/talos/internal/tracing"
 )
 
 // TestInitTracer_Disabled tests tracing when disabled in config

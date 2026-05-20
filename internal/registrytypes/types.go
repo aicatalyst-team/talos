@@ -7,11 +7,11 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/ory-corp/talos/internal/cache"
-	"github.com/ory-corp/talos/internal/logger"
-	"github.com/ory-corp/talos/internal/persistence"
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	"github.com/ory-corp/talos/internal/ratelimit"
+	"github.com/ory/talos/internal/cache"
+	"github.com/ory/talos/internal/logger"
+	"github.com/ory/talos/internal/persistence"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	"github.com/ory/talos/internal/ratelimit"
 	"github.com/ory/x/contextx"
 )
 

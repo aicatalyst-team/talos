@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	client "github.com/ory-corp/talos/internal/client/generated"
-	"github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/testutil"
-	testutiltesting "github.com/ory-corp/talos/internal/testutil/testserver"
+	client "github.com/ory/talos/internal/client/generated"
+	"github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/testutil"
+	testutiltesting "github.com/ory/talos/internal/testutil/testserver"
 )
 
 func (s *APIKeyE2ETestSuite) TestGetJWKS() {

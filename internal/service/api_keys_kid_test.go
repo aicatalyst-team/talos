@@ -16,17 +16,17 @@ import (
 	"github.com/ory/x/configx"
 	"github.com/ory/x/httpx"
 
-	"github.com/ory-corp/talos/internal/cache"
-	"github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/crypto"
-	"github.com/ory-corp/talos/internal/events"
-	"github.com/ory-corp/talos/internal/lastused"
-	"github.com/ory-corp/talos/internal/metrics"
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	"github.com/ory-corp/talos/internal/service"
-	"github.com/ory-corp/talos/internal/testutil"
+	"github.com/ory/talos/internal/cache"
+	"github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/crypto"
+	"github.com/ory/talos/internal/events"
+	"github.com/ory/talos/internal/lastused"
+	"github.com/ory/talos/internal/metrics"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	"github.com/ory/talos/internal/service"
+	"github.com/ory/talos/internal/testutil"
 
-	talosv2 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	talosv2 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // TestDeriveToken_KIDHintRoutesToConfiguredKey verifies the full service-layer

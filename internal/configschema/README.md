@@ -84,7 +84,7 @@ in the OSS Edition.
 Both editions import from the same package:
 
 ```go
-import "github.com/ory-corp/talos/internal/configschema"
+import "github.com/ory/talos/internal/configschema"
 
 // Use the unified schema
 schema := configschema.ConfigSchemaJSON

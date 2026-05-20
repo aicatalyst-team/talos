@@ -14,7 +14,7 @@ import (
 
 	"github.com/ory/x/cmdx"
 
-	client "github.com/ory-corp/talos/internal/client/generated"
+	client "github.com/ory/talos/internal/client/generated"
 )
 
 // rawRow wraps any SDK type for cmdx.PrintRow.

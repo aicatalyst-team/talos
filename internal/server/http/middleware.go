@@ -10,9 +10,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	talosconfig "github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/logger"
-	"github.com/ory-corp/talos/internal/tracing"
+	talosconfig "github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/logger"
+	"github.com/ory/talos/internal/tracing"
 
 	"github.com/ory/x/otelx"
 )

@@ -1,7 +1,7 @@
 // Package configschema provides configuration schema definitions.
 package configschema
 
-import "github.com/ory-corp/talos/spec"
+import "github.com/ory/talos/spec"
 
 // SchemaJSON contains the unified configuration schema with license markers.
 // Fields marked with 'x-license-required: true' require an Enterprise license.

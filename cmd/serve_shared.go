@@ -11,20 +11,20 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/sync/errgroup"
 
-	commercialregistry "github.com/ory-corp/talos/commercial/registry"
+	commercialregistry "github.com/ory/talos/commercial/registry"
 
 	"github.com/ory/x/httpx"
 
-	"github.com/ory-corp/talos/internal/boot"
-	talosconfig "github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/events"
-	"github.com/ory-corp/talos/internal/health"
-	"github.com/ory-corp/talos/internal/logger"
-	"github.com/ory-corp/talos/internal/persistence"
-	"github.com/ory-corp/talos/internal/registry"
-	httpserver "github.com/ory-corp/talos/internal/server/http"
-	"github.com/ory-corp/talos/internal/tracing"
-	"github.com/ory-corp/talos/internal/version"
+	"github.com/ory/talos/internal/boot"
+	talosconfig "github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/events"
+	"github.com/ory/talos/internal/health"
+	"github.com/ory/talos/internal/logger"
+	"github.com/ory/talos/internal/persistence"
+	"github.com/ory/talos/internal/registry"
+	httpserver "github.com/ory/talos/internal/server/http"
+	"github.com/ory/talos/internal/tracing"
+	"github.com/ory/talos/internal/version"
 )
 
 // formatAddr formats host and port into an address string suitable for http.Server.Addr

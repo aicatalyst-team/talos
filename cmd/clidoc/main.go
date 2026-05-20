@@ -10,7 +10,7 @@ import (
 
 	"github.com/ory/x/clidoc"
 
-	"github.com/ory-corp/talos/cmd"
+	"github.com/ory/talos/cmd"
 )
 
 func main() {

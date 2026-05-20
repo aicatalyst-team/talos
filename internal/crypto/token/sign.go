@@ -6,7 +6,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	"github.com/ory-corp/talos/internal/errdef"
+	"github.com/ory/talos/internal/errdef"
 )
 
 // SignDerivedTokenParams groups the parameters required for signing a derived token.

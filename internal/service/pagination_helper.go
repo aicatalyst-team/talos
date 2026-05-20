@@ -5,13 +5,13 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	"github.com/ory-corp/talos/internal/contextx"
-	"github.com/ory-corp/talos/internal/crypto"
+	"github.com/ory/talos/internal/contextx"
+	"github.com/ory/talos/internal/crypto"
 
-	"github.com/ory-corp/talos/internal/errdef"
-	"github.com/ory-corp/talos/internal/pagination"
-	"github.com/ory-corp/talos/internal/service/validation"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	"github.com/ory/talos/internal/errdef"
+	"github.com/ory/talos/internal/pagination"
+	"github.com/ory/talos/internal/service/validation"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // paginationHelper manages cursor-based pagination for list operations.

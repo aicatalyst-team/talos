@@ -10,13 +10,13 @@ import (
 	"github.com/lestrrat-go/jwx/v3/jwk"
 	"go.opentelemetry.io/otel/attribute"
 
-	"github.com/ory-corp/talos/internal/errdef"
-	"github.com/ory-corp/talos/internal/tracing"
+	"github.com/ory/talos/internal/errdef"
+	"github.com/ory/talos/internal/tracing"
 
 	"github.com/ory/x/fetcher"
 	"github.com/ory/x/otelx"
 
-	talosconfig "github.com/ory-corp/talos/internal/config"
+	talosconfig "github.com/ory/talos/internal/config"
 )
 
 const keyServiceCacheTTL = 15 * time.Minute

@@ -16,9 +16,9 @@ import (
 
 	"github.com/ory/herodot"
 
-	"github.com/ory-corp/talos/internal/crypto"
-	"github.com/ory-corp/talos/internal/service"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	"github.com/ory/talos/internal/crypto"
+	"github.com/ory/talos/internal/service"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 func TestImportAPIKey(t *testing.T) {

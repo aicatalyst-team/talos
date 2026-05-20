@@ -10,8 +10,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/ory-corp/talos/internal/contextx"
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
+	"github.com/ory/talos/internal/contextx"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
 )
 
 func TestImportedAPIKeyToIssuedAPIKey_PreservesSharedFields(t *testing.T) {

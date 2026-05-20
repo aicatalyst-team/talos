@@ -9,7 +9,7 @@ import (
 	"github.com/ory/x/logrusx"
 	"github.com/ory/x/sqlcon"
 
-	"github.com/ory-corp/talos/internal/persistence/sqlite"
+	"github.com/ory/talos/internal/persistence/sqlite"
 )
 
 // Persister name constants

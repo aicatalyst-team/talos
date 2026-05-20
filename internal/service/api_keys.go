@@ -24,35 +24,35 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/ory-corp/talos/internal/cachecontrol"
+	"github.com/ory/talos/internal/cachecontrol"
 
 	"github.com/ory/herodot"
 
 	"go.opentelemetry.io/otel/attribute"
 
-	"github.com/ory-corp/talos/internal/cache"
-	"github.com/ory-corp/talos/internal/clientip"
-	talosconfig "github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/crypto"
-	"github.com/ory-corp/talos/internal/crypto/token"
-	cryptoverifier "github.com/ory-corp/talos/internal/crypto/verifier"
-	"github.com/ory-corp/talos/internal/errdef"
-	"github.com/ory-corp/talos/internal/eventcontext"
-	"github.com/ory-corp/talos/internal/events"
-	"github.com/ory-corp/talos/internal/metrics"
+	"github.com/ory/talos/internal/cache"
+	"github.com/ory/talos/internal/clientip"
+	talosconfig "github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/crypto"
+	"github.com/ory/talos/internal/crypto/token"
+	cryptoverifier "github.com/ory/talos/internal/crypto/verifier"
+	"github.com/ory/talos/internal/errdef"
+	"github.com/ory/talos/internal/eventcontext"
+	"github.com/ory/talos/internal/events"
+	"github.com/ory/talos/internal/metrics"
 
-	"github.com/ory-corp/talos/internal/contextx"
+	"github.com/ory/talos/internal/contextx"
 
-	"github.com/ory-corp/talos/internal/lastused"
-	"github.com/ory-corp/talos/internal/persistence"
-	"github.com/ory-corp/talos/internal/persistence/persistmodel"
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	"github.com/ory-corp/talos/internal/persistence/sqlutil"
-	persistencetypes "github.com/ory-corp/talos/internal/persistence/types"
-	"github.com/ory-corp/talos/internal/service/validation"
-	"github.com/ory-corp/talos/internal/tracing"
-	"github.com/ory-corp/talos/internal/verifier"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	"github.com/ory/talos/internal/lastused"
+	"github.com/ory/talos/internal/persistence"
+	"github.com/ory/talos/internal/persistence/persistmodel"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	"github.com/ory/talos/internal/persistence/sqlutil"
+	persistencetypes "github.com/ory/talos/internal/persistence/types"
+	"github.com/ory/talos/internal/service/validation"
+	"github.com/ory/talos/internal/tracing"
+	"github.com/ory/talos/internal/verifier"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 
 	"github.com/ory/x/otelx"
 )
@@ -1450,6 +1450,7 @@ func (s *Admin) BatchImportAPIKeys(ctx context.Context, req *talosv2alpha1.Batch
 			talosv2alpha1.BatchImportErrorCode_BATCH_IMPORT_ERROR_ALREADY_EXISTS,
 			talosv2alpha1.BatchImportErrorCode_BATCH_IMPORT_ERROR_INVALID_ARGUMENT,
 			talosv2alpha1.BatchImportErrorCode_BATCH_IMPORT_ERROR_FAILED_PRECONDITION,
+			talosv2alpha1.BatchImportErrorCode_BATCH_IMPORT_ERROR_RESOURCE_EXHAUSTED,
 		} {
 			if counts[code] > counts[dominantCode] {
 				dominantCode = code
@@ -1465,6 +1466,8 @@ func (s *Admin) BatchImportAPIKeys(ctx context.Context, req *talosv2alpha1.Batch
 			return nil, errors.WithStack(errdef.BadRequest("all keys in batch failed validation"))
 		case talosv2alpha1.BatchImportErrorCode_BATCH_IMPORT_ERROR_FAILED_PRECONDITION:
 			return nil, errors.WithStack(errdef.FailedPrecondition("all keys in batch failed precondition checks"))
+		case talosv2alpha1.BatchImportErrorCode_BATCH_IMPORT_ERROR_RESOURCE_EXHAUSTED:
+			return nil, errors.WithStack(errdef.ErrAPIKeyQuotaExceeded().WithReasonf("all keys in batch exceeded the tenant quota"))
 		}
 
 		return nil, errors.WithStack(errdef.InternalError("all keys in batch import failed"))
@@ -1510,6 +1513,8 @@ func batchImportErrorCodeLabel(code talosv2alpha1.BatchImportErrorCode) string {
 		return "INVALID_ARGUMENT"
 	case talosv2alpha1.BatchImportErrorCode_BATCH_IMPORT_ERROR_FAILED_PRECONDITION:
 		return "FAILED_PRECONDITION"
+	case talosv2alpha1.BatchImportErrorCode_BATCH_IMPORT_ERROR_RESOURCE_EXHAUSTED:
+		return "RESOURCE_EXHAUSTED"
 	}
 
 	return "INTERNAL"

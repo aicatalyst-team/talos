@@ -9,17 +9,17 @@ import (
 	"github.com/cockroachdb/errors"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
-	"github.com/ory-corp/talos/internal/registrytypes"
+	"github.com/ory/talos/internal/registrytypes"
 
 	"github.com/ory/herodot"
 
-	talosconfig "github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/health"
-	"github.com/ory-corp/talos/internal/logger"
-	"github.com/ory-corp/talos/internal/registry"
-	httpserver "github.com/ory-corp/talos/internal/server/http"
-	"github.com/ory-corp/talos/internal/service"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	talosconfig "github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/health"
+	"github.com/ory/talos/internal/logger"
+	"github.com/ory/talos/internal/registry"
+	httpserver "github.com/ory/talos/internal/server/http"
+	"github.com/ory/talos/internal/service"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // ServerMode defines the operational mode of the server.

@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/persistence"
+	"github.com/ory/talos/internal/persistence"
 )
 
 func TestOSSEdition_OnlySQLiteAvailable(t *testing.T) {

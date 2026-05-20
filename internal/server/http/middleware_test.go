@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	talosconfig "github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/logger"
-	httpserver "github.com/ory-corp/talos/internal/server/http"
+	talosconfig "github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/logger"
+	httpserver "github.com/ory/talos/internal/server/http"
 
 	"github.com/ory/x/configx"
 )

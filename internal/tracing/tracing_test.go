@@ -12,9 +12,9 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 
-	"github.com/ory-corp/talos/internal/tracing"
+	"github.com/ory/talos/internal/tracing"
 
-	"github.com/ory-corp/talos/internal/contextx"
+	"github.com/ory/talos/internal/contextx"
 
 	"github.com/ory/x/otelx"
 )

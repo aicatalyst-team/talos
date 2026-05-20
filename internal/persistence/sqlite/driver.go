@@ -13,16 +13,16 @@ import (
 
 	"github.com/ory/x/otelx"
 
-	"github.com/ory-corp/talos/internal/persistence/persistmodel"
+	"github.com/ory/talos/internal/persistence/persistmodel"
 
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	"github.com/ory-corp/talos/internal/persistence/sqlite/sqliteshared"
-	"github.com/ory-corp/talos/internal/persistence/sqlutil"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	"github.com/ory/talos/internal/persistence/sqlite/sqliteshared"
+	"github.com/ory/talos/internal/persistence/sqlutil"
 
-	persistencetypes "github.com/ory-corp/talos/internal/persistence/types"
-	"github.com/ory-corp/talos/internal/tracing"
+	persistencetypes "github.com/ory/talos/internal/persistence/types"
+	"github.com/ory/talos/internal/tracing"
 
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // networkID is the fixed NID for OSS — single-tenant with no network isolation.

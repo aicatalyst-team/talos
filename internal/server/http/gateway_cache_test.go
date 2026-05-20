@@ -10,8 +10,8 @@ import (
 
 	"github.com/ory/x/configx"
 
-	"github.com/ory-corp/talos/internal/cachecontrol"
-	"github.com/ory-corp/talos/internal/testutil"
+	"github.com/ory/talos/internal/cachecontrol"
+	"github.com/ory/talos/internal/testutil"
 )
 
 func TestCacheControlContextPropagation(t *testing.T) {

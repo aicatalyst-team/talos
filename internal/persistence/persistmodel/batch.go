@@ -7,7 +7,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
 )
 
 // requestIDMaxLen is the maximum byte length of RequestID, matching the

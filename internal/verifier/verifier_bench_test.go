@@ -13,24 +13,24 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/durationpb"
 
-	"github.com/ory-corp/talos/internal/cache"
-	"github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/lastused"
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	"github.com/ory-corp/talos/internal/testutil"
+	"github.com/ory/talos/internal/cache"
+	"github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/lastused"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	"github.com/ory/talos/internal/testutil"
 
 	"github.com/ory/x/configx"
 	"github.com/ory/x/httpx"
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/ory-corp/talos/internal/crypto"
-	"github.com/ory-corp/talos/internal/crypto/token"
-	"github.com/ory-corp/talos/internal/events"
-	"github.com/ory-corp/talos/internal/metrics"
-	"github.com/ory-corp/talos/internal/service"
-	"github.com/ory-corp/talos/internal/verifier"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	"github.com/ory/talos/internal/crypto"
+	"github.com/ory/talos/internal/crypto/token"
+	"github.com/ory/talos/internal/events"
+	"github.com/ory/talos/internal/metrics"
+	"github.com/ory/talos/internal/service"
+	"github.com/ory/talos/internal/verifier"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // benchCache is a simple sync.Map-based cache for benchmarks.

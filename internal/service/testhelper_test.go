@@ -3,8 +3,8 @@ package service_test
 import (
 	"testing"
 
-	"github.com/ory-corp/talos/internal/service"
-	"github.com/ory-corp/talos/internal/verifier"
+	"github.com/ory/talos/internal/service"
+	"github.com/ory/talos/internal/verifier"
 )
 
 // newTestAdmin creates a Admin and its Verifier backed by file-based SQLite.

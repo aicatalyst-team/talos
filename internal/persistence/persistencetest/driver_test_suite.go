@@ -13,15 +13,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/contextx"
+	"github.com/ory/talos/internal/contextx"
 
-	"github.com/ory-corp/talos/internal/crypto"
-	"github.com/ory-corp/talos/internal/persistence"
-	"github.com/ory-corp/talos/internal/persistence/persistmodel"
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	"github.com/ory-corp/talos/internal/persistence/sqlutil"
-	persistencetypes "github.com/ory-corp/talos/internal/persistence/types"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	"github.com/ory/talos/internal/crypto"
+	"github.com/ory/talos/internal/persistence"
+	"github.com/ory/talos/internal/persistence/persistmodel"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	"github.com/ory/talos/internal/persistence/sqlutil"
+	persistencetypes "github.com/ory/talos/internal/persistence/types"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // DriverTestSuite provides comprehensive tests for persistence.Persister interface

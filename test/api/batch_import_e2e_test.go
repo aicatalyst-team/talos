@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	client "github.com/ory-corp/talos/internal/client/generated"
+	client "github.com/ory/talos/internal/client/generated"
 )
 
 func (s *APIKeyE2ETestSuite) TestBatchImportAPIKeys() {

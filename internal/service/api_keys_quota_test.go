@@ -10,9 +10,9 @@ import (
 
 	"github.com/ory/herodot"
 
-	"github.com/ory-corp/talos/internal/config"
+	"github.com/ory/talos/internal/config"
 
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // TestAPIKeyQuotaEnforcement verifies that quota.api_keys_max caps the number
@@ -114,6 +114,23 @@ func TestAPIKeyQuotaEnforcement(t *testing.T) {
 		for i := range 5 {
 			_, err := svc.IssueAPIKey(ctx, &talosv2alpha1.IssueAPIKeyRequest{
 				Name:    fmt.Sprintf("Unbounded %d", i),
+				ActorId: "tester",
+			})
+			require.NoError(t, err)
+		}
+	})
+
+	t.Run("zero quota cap allows unlimited keys", func(t *testing.T) {
+		t.Parallel()
+		// quotaCap <= 0 is the documented "unlimited" sentinel — enforceAPIKeyQuota
+		// must short-circuit before counting.
+		svc, ctx := setupTestServiceWithConfig(t, map[string]any{
+			config.KeyQuotaAPIKeysMax.String(): 0,
+		})
+
+		for i := range 10 {
+			_, err := svc.IssueAPIKey(ctx, &talosv2alpha1.IssueAPIKeyRequest{
+				Name:    fmt.Sprintf("Zero cap %d", i),
 				ActorId: "tester",
 			})
 			require.NoError(t, err)

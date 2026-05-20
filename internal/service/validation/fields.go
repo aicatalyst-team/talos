@@ -8,10 +8,10 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	"github.com/ory-corp/talos/internal/clientip"
-	"github.com/ory-corp/talos/internal/errdef"
-	"github.com/ory-corp/talos/internal/persistence/sqlutil"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	"github.com/ory/talos/internal/clientip"
+	"github.com/ory/talos/internal/errdef"
+	"github.com/ory/talos/internal/persistence/sqlutil"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // NormalizedFields holds normalized request fields ready for persistence.

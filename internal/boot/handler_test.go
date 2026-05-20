@@ -14,13 +14,13 @@ import (
 	"github.com/ory/herodot"
 	"github.com/ory/x/httpx"
 
-	commercialregistry "github.com/ory-corp/talos/commercial/registry"
-	"github.com/ory-corp/talos/internal/boot"
-	"github.com/ory-corp/talos/internal/health"
-	"github.com/ory-corp/talos/internal/logger"
-	"github.com/ory-corp/talos/internal/registry"
-	httpserver "github.com/ory-corp/talos/internal/server/http"
-	"github.com/ory-corp/talos/internal/testutil"
+	commercialregistry "github.com/ory/talos/commercial/registry"
+	"github.com/ory/talos/internal/boot"
+	"github.com/ory/talos/internal/health"
+	"github.com/ory/talos/internal/logger"
+	"github.com/ory/talos/internal/registry"
+	httpserver "github.com/ory/talos/internal/server/http"
+	"github.com/ory/talos/internal/testutil"
 )
 
 // buildDeps constructs a ServerDependencies for the given mode using a fresh

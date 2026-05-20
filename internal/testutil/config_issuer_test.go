@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory-corp/talos/internal/config"
+	"github.com/ory/talos/internal/config"
 )
 
 func TestConfigRequiresIssuer(t *testing.T) {

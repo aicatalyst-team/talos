@@ -7,7 +7,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // ListFilter holds parsed filter values extracted from an AIP-160 filter string.

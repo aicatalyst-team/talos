@@ -8,11 +8,11 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/ory-corp/talos/commercial/config"
+	"github.com/ory/talos/commercial/config"
 
-	"github.com/ory-corp/talos/internal/boot"
-	talosconfig "github.com/ory-corp/talos/internal/config"
-	_ "github.com/ory-corp/talos/internal/metrics" // Register Prometheus metrics
+	"github.com/ory/talos/internal/boot"
+	talosconfig "github.com/ory/talos/internal/config"
+	_ "github.com/ory/talos/internal/metrics" // Register Prometheus metrics
 )
 
 const exampleCommandPath = `  {{ .CommandPath }}`

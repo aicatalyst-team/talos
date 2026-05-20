@@ -1,4 +1,4 @@
-module github.com/ory-corp/talos
+module github.com/ory/talos
 
 go 1.26.0
 

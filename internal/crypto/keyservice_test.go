@@ -17,10 +17,10 @@ import (
 
 	"github.com/ory/herodot"
 
-	"github.com/ory-corp/talos/internal/contextx"
+	"github.com/ory/talos/internal/contextx"
 
-	talosconfig "github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/testutil"
+	talosconfig "github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/testutil"
 
 	"github.com/ory/x/configx"
 	"github.com/ory/x/httpx"

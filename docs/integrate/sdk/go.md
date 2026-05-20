@@ -29,7 +29,7 @@ The examples below use the internal client's types for illustration. A generated
 the same API shape.
 
 :::tip Full working example See
-[`tools/doctest/examples/go_sdk/main.go`](https://github.com/ory-corp/talos/blob/dev/tools/doctest/examples/go_sdk/main.go)
+[`tools/doctest/examples/go_sdk/main.go`](https://github.com/ory/talos/blob/dev/tools/doctest/examples/go_sdk/main.go)
 for a complete, runnable program that exercises all operations shown below. :::
 
 <!-- doctest:exec -->

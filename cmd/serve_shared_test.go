@@ -18,14 +18,14 @@ import (
 	"github.com/ory/x/configx"
 	"github.com/ory/x/httpx"
 
-	commercialregistry "github.com/ory-corp/talos/commercial/registry"
-	"github.com/ory-corp/talos/internal/boot"
-	talosconfig "github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/health"
-	"github.com/ory-corp/talos/internal/logger"
-	"github.com/ory-corp/talos/internal/registry"
-	httpserver "github.com/ory-corp/talos/internal/server/http"
-	"github.com/ory-corp/talos/internal/testutil"
+	commercialregistry "github.com/ory/talos/commercial/registry"
+	"github.com/ory/talos/internal/boot"
+	talosconfig "github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/health"
+	"github.com/ory/talos/internal/logger"
+	"github.com/ory/talos/internal/registry"
+	httpserver "github.com/ory/talos/internal/server/http"
+	"github.com/ory/talos/internal/testutil"
 )
 
 func TestCreateMetricsHTTPServer(t *testing.T) {

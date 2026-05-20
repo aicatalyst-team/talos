@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/ory-corp/talos/internal/persistence/sqlutil"
+	"github.com/ory/talos/internal/persistence/sqlutil"
 )
 
 func TestCalculateRevocationExpiry(t *testing.T) {

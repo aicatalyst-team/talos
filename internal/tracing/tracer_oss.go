@@ -7,7 +7,7 @@ import (
 
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 
-	"github.com/ory-corp/talos/internal/config"
+	"github.com/ory/talos/internal/config"
 )
 
 // InitTracer is a no-op in OSS builds; tracing requires the commercial edition.

@@ -21,19 +21,19 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/ory-corp/talos/internal/cachecontrol"
-	"github.com/ory-corp/talos/internal/clientip"
-	"github.com/ory-corp/talos/internal/config"
-	"github.com/ory-corp/talos/internal/errdef"
-	"github.com/ory-corp/talos/internal/health"
-	"github.com/ory-corp/talos/internal/tracing"
+	"github.com/ory/talos/internal/cachecontrol"
+	"github.com/ory/talos/internal/clientip"
+	"github.com/ory/talos/internal/config"
+	"github.com/ory/talos/internal/errdef"
+	"github.com/ory/talos/internal/health"
+	"github.com/ory/talos/internal/tracing"
 
 	otelcodes "go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/ory/herodot"
 
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // GatewayServer handles HTTP/REST requests using grpc-gateway

@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 func dbAPIKeyCommonFieldsT(t *testing.T, key db.IssuedApiKey) dbAPIKeyFields {

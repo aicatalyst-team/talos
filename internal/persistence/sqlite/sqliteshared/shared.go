@@ -17,11 +17,11 @@ import (
 
 	_ "modernc.org/sqlite" // Pure Go SQLite driver
 
-	"github.com/ory-corp/talos/internal/persistence/persistmodel"
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
-	"github.com/ory-corp/talos/internal/persistence/sqlutil"
+	"github.com/ory/talos/internal/persistence/persistmodel"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
+	"github.com/ory/talos/internal/persistence/sqlutil"
 
-	talosv2alpha1 "github.com/ory-corp/talos/pkg/api/talos/v2alpha1"
+	talosv2alpha1 "github.com/ory/talos/pkg/api/talos/v2alpha1"
 )
 
 // MaxBatchKeys is the maximum number of imported keys per batch insert.

@@ -4,7 +4,7 @@ version: "2"
 formatters:
   settings:
     gofumpt:
-      module-path: github.com/ory-corp/talos
+      module-path: github.com/ory/talos
       extra-rules: true
 
 linters:

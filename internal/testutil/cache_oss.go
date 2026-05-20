@@ -4,8 +4,8 @@
 package testutil
 
 import (
-	"github.com/ory-corp/talos/internal/cache"
-	db "github.com/ory-corp/talos/internal/persistence/sqlc/generated"
+	"github.com/ory/talos/internal/cache"
+	db "github.com/ory/talos/internal/persistence/sqlc/generated"
 )
 
 // GetCacheForTests returns a noop cache for OSS tests

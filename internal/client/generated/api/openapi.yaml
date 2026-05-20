@@ -1058,12 +1058,14 @@ components:
          - BATCH_IMPORT_ERROR_ALREADY_EXISTS: A key with this identifier already exists
          - BATCH_IMPORT_ERROR_FAILED_PRECONDITION: State conflict prevents the import
          - BATCH_IMPORT_ERROR_INTERNAL: Server error during import
+         - BATCH_IMPORT_ERROR_RESOURCE_EXHAUSTED: Per-tenant quota cap reached
       enum:
       - BATCH_IMPORT_ERROR_UNSPECIFIED
       - BATCH_IMPORT_ERROR_INVALID_ARGUMENT
       - BATCH_IMPORT_ERROR_ALREADY_EXISTS
       - BATCH_IMPORT_ERROR_FAILED_PRECONDITION
       - BATCH_IMPORT_ERROR_INTERNAL
+      - BATCH_IMPORT_ERROR_RESOURCE_EXHAUSTED
       type: string
     BatchImportResult:
       description: BatchImportResult contains the result for one key in a batch import

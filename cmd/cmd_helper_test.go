@@ -21,7 +21,7 @@ import (
 
 	"github.com/ory/x/cmdx"
 
-	client "github.com/ory-corp/talos/internal/client/generated"
+	client "github.com/ory/talos/internal/client/generated"
 )
 
 // testContext provides access to a running test server and CLI execution helpers.
