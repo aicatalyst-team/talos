@@ -3,7 +3,7 @@ description: Build the OSS binary, run migrations, start the server, and verify 
 inputs:
   go-version-file:
     description: Path to go.mod for version detection
-    default: "talos/talos/go.mod"
+    default: "go.mod"
   cache-version:
     description: Cache version; bump to invalidate all caches
     default: "v5"
@@ -17,12 +17,12 @@ runs:
         check-latest: true
         cache: true
         cache-dependency-path: |
-          talos/talos/go.sum
-          talos/talos/tools/go.sum
+          go.sum
+          tools/go.sum
 
     - name: Build binaries
       shell: bash
-      working-directory: talos/talos
+      working-directory: .
       run: |
         mkdir -p .bin
         CGO_ENABLED=1 go build -o .bin/talos .
@@ -30,7 +30,7 @@ runs:
 
     - name: Run database migrations
       shell: bash
-      working-directory: talos/talos
+      working-directory: .
       run: |
         mkdir -p .db
         ./.bin/talos migrate up --database "sqlite3://.db/demo.db"
@@ -38,7 +38,7 @@ runs:
 
     - name: Start API server
       shell: bash
-      working-directory: talos/talos
+      working-directory: .
       run: |
         cat > demo-config.yaml <<EOF
         credentials:
@@ -71,7 +71,7 @@ runs:
 
     - name: Test health endpoint
       shell: bash
-      working-directory: talos/talos
+      working-directory: .
       run: |
         echo "Testing health endpoint..."
         response=$(curl -s -w "\n%{http_code}" http://localhost:4420/health/alive)
@@ -84,7 +84,7 @@ runs:
 
     - name: Test ready endpoint
       shell: bash
-      working-directory: talos/talos
+      working-directory: .
       run: |
         echo "Testing ready endpoint..."
         response=$(curl -s -w "\n%{http_code}" http://localhost:4422/health/ready)
@@ -98,7 +98,7 @@ runs:
     - name: Stop API server
       if: always()
       shell: bash
-      working-directory: talos/talos
+      working-directory: .
       run: |
         if [ -n "$SERVER_PID" ]; then
           kill $SERVER_PID || true

@@ -1,0 +1,8 @@
+FROM gcr.io/distroless/static-debian12:nonroot
+
+COPY talos /usr/bin/talos
+
+EXPOSE 4420 4422
+
+ENTRYPOINT ["talos"]
+CMD ["serve"]

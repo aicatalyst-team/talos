@@ -13,8 +13,8 @@ services:
   # Database initialization (runs migrations on SQLite)
   db-init:
     build:
-      context: ../..
-      dockerfile: talos/talos/deployments/docker/Dockerfile.oss.init
+      context: .
+      dockerfile: deployments/docker/Dockerfile.oss.init
     container_name: ory-talos-db-init-oss
     environment:
       DB_DSN: sqlite3:///var/lib/talos/talos.db?_journal_mode=WAL
@@ -26,8 +26,8 @@ services:
   # OSS backend server
   backend:
     build:
-      context: ../..
-      dockerfile: talos/talos/.docker/Dockerfile-local-build
+      context: .
+      dockerfile: .docker/Dockerfile-local-build
     container_name: ory-talos-backend-oss
     depends_on:
       db-init:

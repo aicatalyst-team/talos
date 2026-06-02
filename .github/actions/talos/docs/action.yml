@@ -3,7 +3,7 @@ description: Run Talos documentation verification and build the Docusaurus site.
 inputs:
   go-version-file:
     description: Path to go.mod for version detection
-    default: "talos/talos/go.mod"
+    default: "go.mod"
   node-version:
     description: Node.js version
     default: "24"
@@ -20,36 +20,36 @@ runs:
         check-latest: true
         cache: true
         cache-dependency-path: |
-          talos/talos/go.sum
-          talos/talos/tools/go.sum
+          go.sum
+          tools/go.sum
 
     - name: Cache generated code
       id: cache-generated
       uses: actions/cache@v5
       with:
         path: |
-          talos/talos/docs/api/
-          talos/talos/.bin/doctest
+          docs/api/
+          .bin/doctest
         key:
-          ${{ inputs.cache-version }}-codegen-${{ hashFiles('talos/talos/api/**/*.proto',
-          'talos/talos/internal/config.schema.json',
-          'talos/talos/website/docusaurus.config.ts', 'talos/talos/website/sidebar.ts',
-          'talos/talos/internal/persistence/sqlc/**/*.sql', 'talos/talos/cmd/**/*.go',
-          'talos/talos/go.sum') }}
+          ${{ inputs.cache-version }}-codegen-${{ hashFiles('api/**/*.proto',
+          'internal/config.schema.json',
+          'website/docusaurus.config.ts', 'website/sidebar.ts',
+          'internal/persistence/sqlc/**/*.sql', 'cmd/**/*.go',
+          'go.sum') }}
 
     - name: Cache tools
       id: cache-tools
       uses: actions/cache@v5
       with:
-        path: talos/talos/.bin/
+        path: .bin/
         key:
           ${{ inputs.cache-version }}-tools-${{ runner.os }}-${{
-          hashFiles('talos/talos/Makefile') }}
+          hashFiles('Makefile') }}
 
     - name: Install tools
       if: steps.cache-generated.outputs.cache-hit != 'true'
       shell: bash
-      working-directory: talos/talos
+      working-directory: .
       run: make tools
 
     - name: Setup Node.js
@@ -57,41 +57,41 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
         cache: "npm"
-        cache-dependency-path: talos/talos/website/package-lock.json
+        cache-dependency-path: website/package-lock.json
 
     - name: Install website dependencies
-      working-directory: talos/talos/website
+      working-directory: website
       shell: bash
       run: npm ci
 
     - name: Generate docs and API reference
       if: steps.cache-generated.outputs.cache-hit != 'true'
       shell: bash
-      working-directory: talos/talos
+      working-directory: .
       run: make generate
 
     - name: Check formatting
-      working-directory: talos/talos/website
+      working-directory: website
       shell: bash
       run: npm run format:check
 
     - name: Lint Talos documentation
-      working-directory: talos/talos
+      working-directory: .
       shell: bash
       run: make docs-lint
 
     - name: Test Talos documentation examples
-      working-directory: talos/talos
+      working-directory: .
       shell: bash
       run: make docs-test
 
     - name: Check Talos documentation drift
-      working-directory: talos/talos
+      working-directory: .
       shell: bash
       run: make docs-drift
 
     - name: Build documentation
-      working-directory: talos/talos/website
+      working-directory: website
       shell: bash
       run: npm run build
 
@@ -99,5 +99,5 @@ runs:
       uses: actions/upload-artifact@v7
       with:
         name: docusaurus-build
-        path: talos/talos/website/build/
+        path: website/build/
         retention-days: 7

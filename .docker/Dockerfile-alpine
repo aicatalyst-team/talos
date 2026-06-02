@@ -1,0 +1,31 @@
+FROM alpine:3.21
+
+RUN <<HEREDOC
+    apk add --no-cache --upgrade ca-certificates
+
+    # Add a user/group for nonroot with a stable UID + GID. Values are from nonroot from distroless
+    # for interoperability with other containers.
+    addgroup --system --gid 65532 nonroot
+    adduser --system --uid 65532 \
+      --gecos "nonroot User" \
+      --home /home/nonroot \
+      --ingroup nonroot \
+      --shell /sbin/nologin \
+      nonroot
+
+    # Talos supports SQLite. Create the data directory owned by the nonroot user so a
+    # mounted volume inherits the correct ownership and is writable without running as root.
+    mkdir -p /var/lib/talos
+    chown nonroot:nonroot /var/lib/talos
+HEREDOC
+
+COPY talos /usr/bin/talos
+
+VOLUME /var/lib/talos
+
+USER nonroot
+
+EXPOSE 4420 4422
+
+ENTRYPOINT ["talos"]
+CMD ["serve"]

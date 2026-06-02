@@ -17,14 +17,11 @@ RUN apk add --no-cache git ca-certificates
 
 WORKDIR /build
 
-# Copy the replaced sibling modules referenced by talos/talos/go.mod.
-COPY cloudlib ./cloudlib
-COPY x ./x
-
-# Copy talos sources (context is the repository root).
-COPY talos/talos ./talos/talos
-
-WORKDIR /build/talos/talos
+# Build context is the talos repository. ory/x is supplied as the "oryx" build
+# context (monorepo: ../../x). Build against the cloudlib-free OSS module manifest in
+# .oss/. The OSS sync collapses these four COPY lines to a single `COPY . ./`: there
+# oryx/ is a real subdirectory and go.mod/go.sum are already the cloudlib-free ones.
+COPY . .
 
 RUN go mod download
 
@@ -42,13 +39,13 @@ FROM alpine:3.19
 RUN apk add --no-cache ca-certificates
 
 # Copy the binary
-COPY --from=builder /build/talos/talos/talos /talos
+COPY --from=builder /build/talos /talos
 
 # Copy migrations (OSS only)
-COPY --from=builder /build/talos/talos/internal/persistence/migrations /migrations
+COPY --from=builder /build/internal/persistence/migrations /migrations
 
 # Copy init script
-COPY talos/talos/deployments/docker/scripts/init-db-oss.sh /init-db.sh
+COPY deployments/docker/scripts/init-db-oss.sh /init-db.sh
 RUN chmod +x /init-db.sh
 
 # Run init script. This one-shot container runs as root so it can create and

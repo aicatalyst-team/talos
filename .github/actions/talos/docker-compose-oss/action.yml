@@ -5,13 +5,13 @@ runs:
   steps:
     - name: Build and start services
       shell: bash
-      working-directory: talos/talos
+      working-directory: .
       run: docker compose -f docker-compose.oss.yaml up --build -d
       # timeout-minutes cannot be set in composite action steps; set it in the calling job
 
     - name: Wait for backend to be healthy
       shell: bash
-      working-directory: talos/talos
+      working-directory: .
       run: |
         echo "Waiting for backend to become healthy..."
         for i in $(seq 1 60); do
@@ -31,7 +31,7 @@ runs:
 
     - name: Verify backend health
       shell: bash
-      working-directory: talos/talos
+      working-directory: .
       run: |
         docker compose -f docker-compose.oss.yaml exec -T backend wget -q -O- http://localhost:4422/health/alive > /dev/null
         echo "Backend health endpoint OK"
@@ -39,17 +39,17 @@ runs:
     - name: Show service status
       if: always()
       shell: bash
-      working-directory: talos/talos
+      working-directory: .
       run: docker compose -f docker-compose.oss.yaml ps -a
 
     - name: Dump logs on failure
       if: failure()
       shell: bash
-      working-directory: talos/talos
+      working-directory: .
       run: docker compose -f docker-compose.oss.yaml logs --tail=100
 
     - name: Tear down
       if: always()
       shell: bash
-      working-directory: talos/talos
+      working-directory: .
       run: docker compose -f docker-compose.oss.yaml down -v

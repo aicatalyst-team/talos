@@ -1,0 +1,25 @@
+FROM golang:1.26 AS builder
+
+WORKDIR /build
+
+# Build context is the talos repository. ory/x is supplied as the "oryx" build
+# context (monorepo: ../../x). Build against the cloudlib-free OSS module manifest in
+# .oss/. The OSS sync collapses these four COPY lines to a single `COPY . ./`: there
+# oryx/ is a real subdirectory and go.mod/go.sum are already the cloudlib-free ones.
+COPY . .
+
+RUN go mod download
+
+# Talos uses the pure-Go modernc.org/sqlite driver, so CGO is not required.
+RUN CGO_ENABLED=0 go build -ldflags="-w -s" -o /usr/bin/talos .
+
+#########################
+
+FROM gcr.io/distroless/static-debian12:debug-nonroot AS runner
+
+COPY --from=builder /usr/bin/talos /usr/bin/talos
+
+EXPOSE 4420 4422
+
+ENTRYPOINT ["talos"]
+CMD ["serve"]

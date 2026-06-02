@@ -158,6 +158,27 @@ generate: ## Generate code (proto, sqlc, client, docs, cli docs, ts client)
 	@echo "  - Doc test tool: .bin/doctest"
 
 # ============================================================================
+# OSS sync manifest (monorepo-only; not synced to github.com/ory/talos)
+# ============================================================================
+
+.PHONY: generate-oss-manifest
+generate-oss-manifest: ## Regenerate the cloudlib-free .oss/{go.mod,go.sum} for the OSS sync
+	@bash .oss/generate.sh
+
+.PHONY: check-oss-manifest
+check-oss-manifest: ## Fail if .oss/{go.mod,go.sum} drift from a fresh generation
+	@tmp=$$(mktemp -d); trap 'rm -rf "$$tmp"' EXIT; \
+		bash .oss/generate.sh "$$tmp" >/dev/null; \
+		if ! diff -u .oss/go.mod "$$tmp/go.mod" || ! diff -u .oss/go.sum "$$tmp/go.sum"; then \
+			echo "OSS manifest is stale. Run 'make generate-oss-manifest' and commit."; exit 1; \
+		fi; \
+		echo "✓ OSS manifest up to date"
+
+.PHONY: check-oss-sync-contract
+check-oss-sync-contract: ## Fail if .oss/generate.sh and copy.bara.sky drift (list parity + transform coupling)
+	@bash .oss/check-sync-contract.sh
+
+# ============================================================================
 # Database
 # ============================================================================
 

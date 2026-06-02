@@ -1,0 +1,16 @@
+version: 2
+
+includes:
+  - from_url:
+      url: https://raw.githubusercontent.com/ory/xgoreleaser/master/build.tmpl.yml
+
+variables:
+  brew_name: talos
+  brew_description: "The Ory API Credential Management Platform (Ory Talos)"
+  buildinfo_hash: "github.com/ory/talos/internal/version.Commit"
+  buildinfo_tag: "github.com/ory/talos/internal/version.Version"
+  buildinfo_date: "github.com/ory/talos/internal/version.BuildTime"
+  dockerfile_alpine: ".docker/Dockerfile-alpine"
+  dockerfile_static: ".docker/Dockerfile-distroless-static"
+
+project_name: talos
