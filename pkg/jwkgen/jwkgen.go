@@ -1,6 +1,7 @@
 // Package jwkgen generates JSON Web Keys for signing and HMAC secrets.
 // It produces keys in the canonical format expected by talos: each key includes
-// a thumbprint-based key ID, the "sig" usage, and the correct algorithm.
+// a key ID derived from the RFC 7638 JWK thumbprint, the "sig" usage, and the
+// correct algorithm.
 //
 // This package is safe to import from other services (e.g. backoffice) that
 // need to generate keys in the same format talos consumes.
@@ -10,8 +11,6 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
 	"time"
 
@@ -30,9 +29,10 @@ import (
 //
 // If alg is empty, EdDSA is used. Supported values: "EdDSA", "RS256".
 //
-// If kid is empty, the key ID is derived from a SHA-256 thumbprint of the
-// public key. If kid is non-empty, it is used verbatim with no format
-// validation, matching talos's lookup rules.
+// If kid is empty, the key ID is derived from the key's RFC 7638 JWK
+// thumbprint (SHA-256, base64url without padding), so any standards-compliant
+// consumer can recompute it. If kid is non-empty, it is used verbatim with no
+// format validation, matching talos's lookup rules.
 func GenerateSigningKeyJWKS(alg, kid string) (jwks, assignedKid string, err error) {
 	if alg == "" {
 		alg = "EdDSA"
@@ -68,12 +68,16 @@ func GenerateSigningKeyJWKS(alg, kid string) (jwks, assignedKid string, err erro
 
 	finalKid := kid
 	if finalKid == "" {
-		finalKid, err = computeThumbprintKeyID(key)
-		if err != nil {
-			return "", "", err
+		// AssignKeyID sets "kid" to the RFC 7638 thumbprint (SHA-256,
+		// base64url without padding) when the key has none.
+		if err := jwk.AssignKeyID(key); err != nil {
+			return "", "", errors.Wrap(err, "assign thumbprint key ID")
 		}
-	}
-	if err := key.Set(jwk.KeyIDKey, finalKid); err != nil {
+		var ok bool
+		if finalKid, ok = key.KeyID(); !ok {
+			return "", "", errors.New("key ID was not assigned")
+		}
+	} else if err := key.Set(jwk.KeyIDKey, finalKid); err != nil {
 		return "", "", errors.Wrap(err, "set key ID")
 	}
 	if err := key.Set(jwk.AlgorithmKey, sigAlg); err != nil {
@@ -134,24 +138,6 @@ func GenerateHMACSecret() HMACSecret {
 		Secret:    randx.MustString(32, randx.AlphaLowerNum),
 		CreatedAt: time.Now().UTC().Format(time.RFC3339),
 	}
-}
-
-// computeThumbprintKeyID returns a SHA-256 thumbprint of the public key,
-// encoded as a URL-safe base64 string. This matches the format used by talos's
-// CLI key generation.
-func computeThumbprintKeyID(key jwk.Key) (string, error) {
-	pubKey, err := key.PublicKey()
-	if err != nil {
-		return "", errors.Wrap(err, "extract public key for thumbprint")
-	}
-
-	jsonBytes, err := json.Marshal(pubKey)
-	if err != nil {
-		return "", errors.Wrap(err, "marshal key for thumbprint")
-	}
-
-	hash := sha256.Sum256(jsonBytes)
-	return base64.URLEncoding.EncodeToString(hash[:]), nil
 }
 
 // injectCreatedAt adds a created_at timestamp to each key in a JWKS JSON string.

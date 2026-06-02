@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"crypto"
+	"encoding/base64"
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/lestrrat-go/jwx/v3/jwa"
@@ -314,12 +317,13 @@ func TestJWKKeyUsability(t *testing.T) {
 	assert.NotNil(t, pubKey)
 }
 
-// TestJWKFingerprintDeterminism verifies that auto-generated key IDs are deterministic.
-// Same key should always produce the same fingerprint (JWK Thumbprint).
+// TestJWKFingerprintDeterminism verifies that auto-generated key IDs are the
+// RFC 7638 thumbprint of the key, so any standards-compliant consumer can
+// recompute the identical kid.
 func TestJWKFingerprintDeterminism(t *testing.T) {
 	t.Parallel()
 
-	// Generate the same key twice without custom kid
+	// Generate a key without a custom kid.
 	tmpDir := t.TempDir()
 
 	outputFile1 := filepath.Join(tmpDir, "key1.json")
@@ -332,15 +336,45 @@ func TestJWKFingerprintDeterminism(t *testing.T) {
 	key1, err := jwk.ParseKey(data1)
 	require.NoError(t, err)
 
-	// Verify key ID exists and is a fingerprint (base64-encoded, not UUID)
 	var kid1 string
 	require.NoError(t, key1.Get(jwk.KeyIDKey, &kid1))
 	assert.NotEmpty(t, kid1, "auto-generated key ID should not be empty")
-	// Base64 URL encoding uses [A-Za-z0-9_-], so we just check length (SHA256=32 bytes -> ~43 chars base64)
-	assert.GreaterOrEqual(t, len(kid1), 40, "fingerprint should be reasonably long (base64-encoded SHA256)")
-	// Verify it's not a UUID (UUID format has specific pattern with hyphens in fixed positions)
-	assert.NotRegexp(t, `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`, kid1,
-		"key ID should not be UUID format")
+
+	// The kid must equal the RFC 7638 thumbprint, base64url-encoded without
+	// padding, computed independently from the published key.
+	tp, err := key1.Thumbprint(crypto.SHA256)
+	require.NoError(t, err)
+	assert.Equal(t, base64.RawURLEncoding.EncodeToString(tp), kid1,
+		"kid must equal the RFC 7638 SHA-256 thumbprint")
+	assert.NotContains(t, kid1, "=", "kid must use base64url without padding")
+	assert.False(t, strings.ContainsAny(kid1, "+/"),
+		"kid must use base64url alphabet, not standard base64")
+}
+
+// TestJWKHMACFingerprintIsRFC7638 verifies symmetric (oct) keys also get an
+// RFC 7638 thumbprint kid, exercising the no-public-key code path.
+func TestJWKHMACFingerprintIsRFC7638(t *testing.T) {
+	t.Parallel()
+
+	tmpDir := t.TempDir()
+	outputFile := filepath.Join(tmpDir, "hmac.json")
+	rootCmd := NewRoot()
+	rootCmd.SetArgs([]string{"jwk", "generate", "hmac", "--output", outputFile})
+	require.NoError(t, rootCmd.Execute())
+
+	data, err := os.ReadFile(outputFile)
+	require.NoError(t, err)
+	key, err := jwk.ParseKey(data)
+	require.NoError(t, err)
+
+	var kid string
+	require.NoError(t, key.Get(jwk.KeyIDKey, &kid))
+
+	tp, err := key.Thumbprint(crypto.SHA256)
+	require.NoError(t, err)
+	assert.Equal(t, base64.RawURLEncoding.EncodeToString(tp), kid,
+		"oct key kid must equal the RFC 7638 SHA-256 thumbprint")
+	assert.NotContains(t, kid, "=", "kid must use base64url without padding")
 }
 
 // TestJWKCustomKIDOverride verifies that custom key IDs override auto-generation.

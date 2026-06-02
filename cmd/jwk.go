@@ -7,8 +7,6 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -254,7 +252,7 @@ Algorithm is determined by key size: 256→HS256, 384→HS384, ≥512→HS512.`,
 				return errors.Wrap(err, "set key type")
 			}
 
-			// Set key ID (uses JWK Thumbprint if not provided)
+			// Set key ID (uses the RFC 7638 JWK thumbprint if not provided)
 			if err := setKeyID(key, flags.kid); err != nil {
 				return err
 			}
@@ -295,7 +293,7 @@ Algorithm is determined by key size: 256→HS256, 384→HS384, ≥512→HS512.`,
 
 // addJWKGenerateFlags adds flags shared by all key generation commands.
 func addJWKGenerateFlags(cmd *cobra.Command, flags *jwkGenerateFlags) {
-	cmd.Flags().StringVar(&flags.kid, "kid", "", "Key ID (JWK Thumbprint used if not provided)")
+	cmd.Flags().StringVar(&flags.kid, "kid", "", "Key ID (RFC 7638 JWK thumbprint used if not provided)")
 	cmd.Flags().StringVar(&flags.use, "use", "", "Key usage: 'sig' for signing, 'enc' for encryption (default: sig)")
 	cmd.Flags().StringVarP(&flags.output, "output", "o", "", "Output file (writes to stdout if not specified)")
 	cmd.Flags().BoolVar(&flags.jwks, "jwks", false, "Output as JWKS (JSON Web Key Set)")
@@ -315,32 +313,15 @@ func addAlgFlag(cmd *cobra.Command, flags *jwkGenerateFlags) {
 	cmd.Flags().StringVar(&flags.alg, "alg", "", "Algorithm override (e.g. RS384, RS512, PS256)")
 }
 
-// setKeyID sets the Key ID on the JWK. If not provided in flags, uses the JWK Thumbprint (RFC 7638).
+// setKeyID sets the Key ID on the JWK. If not provided in flags, it assigns the
+// RFC 7638 JWK thumbprint (SHA-256, base64url without padding) via the jwx
+// library, which canonicalizes the key per key type. AssignKeyID also handles
+// symmetric (oct) keys, so no public-key extraction is needed.
 func setKeyID(key jwk.Key, flagKID string) error {
-	kid := flagKID
-	if kid == "" {
-		// Generate key ID from JWK Thumbprint (RFC 7638)
-		// Compute SHA256 of the public key's JSON representation
-		pubKey := key
-		if key.KeyType().String() != "oct" { // Not symmetric
-			pk, err := key.PublicKey()
-			if err != nil {
-				return errors.Wrap(err, "extract public key for thumbprint")
-			}
-			pubKey = pk
-		}
-
-		// Marshal to JSON and compute SHA256
-		jsonBytes, err := json.Marshal(pubKey)
-		if err != nil {
-			return errors.Wrap(err, "marshal key for thumbprint")
-		}
-
-		// Compute SHA256 and base64-encode
-		hash := sha256.Sum256(jsonBytes)
-		kid = base64.URLEncoding.EncodeToString(hash[:])
+	if flagKID == "" {
+		return errors.Wrap(jwk.AssignKeyID(key), "assign thumbprint key ID")
 	}
-	return errors.Wrap(key.Set(jwk.KeyIDKey, kid), "set key ID")
+	return errors.Wrap(key.Set(jwk.KeyIDKey, flagKID), "set key ID")
 }
 
 // setAlgorithm sets the algorithm on the JWK. Uses provided flag if set, otherwise uses default.
