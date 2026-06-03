@@ -5,7 +5,7 @@
 serve:
   http:
     host: "0.0.0.0"
-    port: 8080
+    port: 4420
     request_log:
       exclude_health_endpoints: true
     cors:

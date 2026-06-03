@@ -93,7 +93,7 @@ Start the proxy with `talos-commercial proxy`:
 
 ```bash
 talos-commercial proxy \
-  --upstream http://talos-central:8080 \
+  --upstream http://talos-central:4420 \
   --listen :9090 \
   --cache-ttl 60s \
   --cache-max-size 104857600
@@ -190,14 +190,14 @@ services:
     image: oryd/talos-commercial:latest
     command: serve
     ports:
-      - "8080:8080"
+      - "4420:4420"
     environment:
       - DATABASE_URL=postgres://talos:secret@db:5432/talos?sslmode=disable
 
   proxy:
     image: oryd/talos-commercial:latest
     command: >
-      proxy --upstream http://talos:8080 --listen :9090 --cache-ttl 60s
+      proxy --upstream http://talos:4420 --listen :9090 --cache-ttl 60s
     ports:
       - "9090:9090"
 
@@ -207,7 +207,7 @@ services:
       # Verify requests go through the local proxy
       - TALOS_VERIFY_URL=http://proxy:9090
       # Admin requests go directly to the central server
-      - TALOS_ADMIN_URL=http://talos:8080
+      - TALOS_ADMIN_URL=http://talos:4420
     depends_on:
       - proxy
       - talos
@@ -230,14 +230,14 @@ spec:
           value: "http://localhost:9090"
         # Admin requests go directly to the central server
         - name: TALOS_ADMIN_URL
-          value: "http://talos.talos-system.svc.cluster.local:8080"
+          value: "http://talos.talos-system.svc.cluster.local:4420"
 
     - name: talos-proxy
       image: oryd/talos-commercial:latest
       args:
         - proxy
         - --upstream
-        - http://talos.talos-system.svc.cluster.local:8080
+        - http://talos.talos-system.svc.cluster.local:4420
         - --listen
         - :9090
         - --cache-ttl

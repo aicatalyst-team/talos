@@ -156,7 +156,7 @@ To run Ory Talos locally:
 docker-compose -f docker-compose.oss.yaml up --build
 ```
 
-The API will be available at http://localhost:8080
+The API will be available at http://localhost:4420
 
 For end-to-end walkthroughs of issuing, verifying, and revoking keys, see the
 [Quickstart guide](https://www.ory.com/docs/talos/quickstart/index) and

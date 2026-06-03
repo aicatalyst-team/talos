@@ -49,7 +49,7 @@ coverage: test-db-check ## Run tests with coverage report
 	@export TEST_POSTGRES_DSN='postgres://postgres:secret@localhost:5433/talos_test?sslmode=disable&pool_mode=standard' && \
 		export TEST_MYSQL_DSN='mysql://root:secret@tcp(localhost:3307)/talos_test?parseTime=true&multiStatements=true&maxAllowedPacket=67108864&timeout=30s&readTimeout=30s&writeTimeout=30s' && \
 		export TEST_COCKROACH_DSN='cockroach://root@localhost:26258/talos_test?sslmode=disable&pool_mode=standard' && \
-		go test -race -timeout 2m -coverpkg=$(if $(PKG),$(PKG),./...) -coverprofile=coverage$(if $(TAGS),-$(TAGS)).out -covermode=atomic $(if $(TAGS),-tags $(TAGS)) $(if $(PKG),$(PKG),./...) $(ARGS)
+		go test -race -count=1 -timeout 2m -coverpkg=$(if $(PKG),$(PKG),./...) -coverprofile=coverage$(if $(TAGS),-$(TAGS)).out -covermode=atomic $(if $(TAGS),-tags $(TAGS)) $(if $(PKG),$(PKG),./...) $(ARGS)
 	@echo ""
 	@echo "Coverage: $$(go tool cover -func=coverage$(if $(TAGS),-$(TAGS)).out | tail -1 | awk '{print $$NF}')"
 	@go tool cover -html=coverage$(if $(TAGS),-$(TAGS)).out -o coverage$(if $(TAGS),-$(TAGS)).html

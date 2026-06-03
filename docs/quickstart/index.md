@@ -27,7 +27,7 @@ Wait for the server to become healthy:
 ```bash
 # Wait for the health endpoint
 for i in $(seq 1 30); do
-  if curl -sf http://localhost:8080/health/alive > /dev/null 2>&1; then
+  if curl -sf http://localhost:4420/health/alive > /dev/null 2>&1; then
     echo "Server is ready"
     break
   fi
@@ -35,7 +35,7 @@ for i in $(seq 1 30); do
 done
 ```
 
-The server listens on `http://localhost:8080`. Check it's running:
+The server listens on `http://localhost:4420`. Check it's running:
 
 <!-- doctest:exec -->
 

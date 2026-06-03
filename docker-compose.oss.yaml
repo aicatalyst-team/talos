@@ -6,7 +6,7 @@
 #   docker-compose -f docker-compose.oss.yaml up --build
 #
 # Access:
-#   - Backend API: http://localhost:8080
+#   - Backend API: http://localhost:4420
 #   - Health: http://localhost:4422/health/alive
 
 services:
@@ -38,13 +38,13 @@ services:
       # Database (SQLite)
       DB_DSN: sqlite3:///var/lib/talos/talos.db?_journal_mode=WAL
       # Server addresses
-      HTTP_ADDR: "0.0.0.0:8080"
+      HTTP_ADDR: "0.0.0.0:4420"
       METRICS_ADDR: "0.0.0.0:4422"
       # Logging
       LOG_LEVEL: info
       LOG_FORMAT: json
     ports:
-      - "8080:8080"   # HTTP API
+      - "4420:4420"   # HTTP API
       - "4422:4422"   # Metrics
     volumes:
       - ./deployments/docker/config/config.oss.yaml:/etc/talos/config.yaml:ro
