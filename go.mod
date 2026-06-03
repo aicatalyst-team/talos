@@ -28,6 +28,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/lestrrat-go/jwx/v3 v3.0.13
 	github.com/ory/herodot v0.10.9-0.20260330111132-da75ef0fbc22
+	github.com/ory/jsonschema/v3 v3.0.9-0.20250317235931-280c5fc7bf0e
 	github.com/ory/x v0.0.729
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/prometheus/client_golang v1.23.2
@@ -137,7 +138,6 @@ require (
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/nyaruka/phonenumbers v1.6.5 // indirect
 	github.com/openzipkin/zipkin-go v0.4.3 // indirect
-	github.com/ory/jsonschema/v3 v3.0.9-0.20250317235931-280c5fc7bf0e // indirect
 	github.com/ory/pop/v6 v6.4.2-0.20260507161217-89126558d369 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/peterhellberg/link v1.2.0 // indirect

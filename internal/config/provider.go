@@ -16,13 +16,17 @@ package config
 
 import (
 	"context"
+	"log/slog"
+	"sync/atomic"
 	"time"
 
 	"github.com/cockroachdb/errors"
 
 	"github.com/ory/talos/internal/configschema"
+	"github.com/ory/talos/internal/logger"
 
 	"github.com/ory/x/configx"
+	"github.com/ory/x/watcherx"
 )
 
 // ProviderInterface defines the interface for configuration providers.
@@ -83,10 +87,22 @@ func NewProviderWithOptions(ctx context.Context, opts ...configx.OptionModifier)
 // Note: Network-specific configuration overrides are handled by the contextualizer
 // at the middleware level, not within this provider.
 func NewProvider(ctx context.Context, configFile string) (*Provider, error) {
+	// The watcher logger is published after the provider is built, because its
+	// level and format come from the config we are about to load. Reload events
+	// only fire on later file changes, long after construction returns, so the
+	// pointer is always set by the time the callback runs. atomic.Pointer keeps
+	// the publish race-free against configx's watcher goroutine.
+	var watchLog atomic.Pointer[slog.Logger]
+
 	opts := []configx.OptionModifier{
 		configx.WithContext(ctx),
 		configx.WithImmutables("db.dsn", "tls.key", "redis.password"),
 		configx.WithStderrValidationReporter(),
+		configx.AttachWatcher(func(e watcherx.Event, err error) {
+			if l := watchLog.Load(); l != nil {
+				logConfigChange(l, e, err)
+			}
+		}),
 	}
 
 	if len(configFile) > 0 {
@@ -97,6 +113,13 @@ func NewProvider(ctx context.Context, configFile string) (*Provider, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "create config provider")
 	}
+
+	// Build the watcher logger from the now-loaded config and publish it so the
+	// callback above can use it on the next reload.
+	watchLog.Store(logger.NewLogger(
+		p.String(KeyLogLevel.String()),
+		p.String(KeyLogFormat.String()),
+	).Logger)
 
 	return &Provider{
 		Provider: p,
