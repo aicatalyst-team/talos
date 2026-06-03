@@ -59,10 +59,16 @@ coverage: test-db-check ## Run tests with coverage report
 lint: $(GOLANGCI_LINT) ## Run linters (use FIX=1 to auto-fix, TAGS=commercial for commercial build)
 	$(GOLANGCI_LINT) run $(if $(FIX),--fix) $(if $(TAGS),--build-tags $(TAGS)) --timeout 5m
 
+# Paths to format/check: every top-level entry except the vendored oryx/ module
+# (synced from github.com/ory/x). Pass directories (not an explicit file list) so
+# gofumpt/goimports keep their built-in skip of generated files and dot-dirs;
+# talos tooling must never reformat vendored or generated code.
+FMT_GO_PATHS = $(wildcard *.go) $(shell find . -maxdepth 1 -mindepth 1 -type d -not -name oryx -not -name '.*')
+
 .PHONY: fmt
 fmt: ## Format code
-	@PATH="$(PWD)/.bin:$$PATH" gofumpt -w .
-	@PATH="$(PWD)/.bin:$$PATH" goimports -w -local github.com/ory .
+	@PATH="$(PWD)/.bin:$$PATH" gofumpt -w $(FMT_GO_PATHS)
+	@PATH="$(PWD)/.bin:$$PATH" goimports -w -local github.com/ory $(FMT_GO_PATHS)
 	@go fix ./...
 	@go mod tidy
 	@npx prettier --write "**/*.{js,jsx,ts,tsx,md,mdx}" --log-level warn
@@ -79,11 +85,11 @@ endef
 
 .PHONY: fmt-check-gofumpt
 fmt-check-gofumpt:
-	$(call fail-if-output,make fmt,PATH="$(PWD)/.bin:$$PATH" gofumpt -l .)
+	$(call fail-if-output,make fmt,PATH="$(PWD)/.bin:$$PATH" gofumpt -l $(FMT_GO_PATHS))
 
 .PHONY: fmt-check-goimports
 fmt-check-goimports:
-	$(call fail-if-output,make fmt,PATH="$(PWD)/.bin:$$PATH" goimports -l -local github.com/ory .)
+	$(call fail-if-output,make fmt,PATH="$(PWD)/.bin:$$PATH" goimports -l -local github.com/ory $(FMT_GO_PATHS))
 
 .PHONY: fmt-check-gomod
 fmt-check-gomod:
@@ -389,8 +395,8 @@ tools: $(GOLANGCI_LINT) .bin/ory ## Install dev tools
 	@GOBIN=$(PWD)/.bin go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.3
 	@GOBIN=$(PWD)/.bin go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
 	@GOBIN=$(PWD)/.bin go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@v1.5.1
-	@GOBIN=$(PWD)/.bin go install mvdan.cc/gofumpt@latest
-	@GOBIN=$(PWD)/.bin go install golang.org/x/tools/cmd/goimports@latest
+	@GOBIN=$(PWD)/.bin go install mvdan.cc/gofumpt@v0.10.0
+	@GOBIN=$(PWD)/.bin go install golang.org/x/tools/cmd/goimports@v0.45.0
 
 .PHONY: docs
 docs: ## Serve documentation (use CMD=build|start)

@@ -24,6 +24,7 @@ mocks/
 
 # Vendor
 vendor/
+oryx/
 
 # Documentation build
 website/build/
