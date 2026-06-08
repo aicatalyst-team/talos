@@ -124,9 +124,9 @@ func (m *MockEmitter) LastEventOfType(eventType events.EventType) *events.AuditE
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
-	for i := len(m.events) - 1; i >= 0; i-- {
-		if m.events[i].EventType == eventType {
-			return m.events[i]
+	for _, e := range slices.Backward(m.events) {
+		if e.EventType == eventType {
+			return e
 		}
 	}
 

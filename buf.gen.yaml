@@ -1,28 +1,32 @@
-version: v1
+version: v2
 managed:
   enabled: true
-  go_package_prefix:
-    default: github.com/ory/talos/pkg
-    except:
-      - buf.build/googleapis/googleapis
-      - buf.build/bufbuild/protovalidate
-      - buf.build/grpc-ecosystem/grpc-gateway
+  override:
+    - file_option: go_package_prefix
+      value: github.com/ory/talos/pkg
+  disable:
+    - file_option: go_package_prefix
+      module: buf.build/googleapis/googleapis
+    - file_option: go_package_prefix
+      module: buf.build/bufbuild/protovalidate
+    - file_option: go_package_prefix
+      module: buf.build/grpc-ecosystem/grpc-gateway
 plugins:
   # Go protobuf
-  - plugin: go
+  - local: ["go", "tool", "protoc-gen-go"]
     out: pkg
     opt:
       - paths=source_relative
 
   # Go gRPC
-  - plugin: go-grpc
+  - local: ["go", "tool", "protoc-gen-go-grpc"]
     out: pkg
     opt:
       - paths=source_relative
       - require_unimplemented_servers=false
 
   # gRPC Gateway
-  - plugin: grpc-gateway
+  - local: ["go", "tool", "protoc-gen-grpc-gateway"]
     out: pkg
     opt:
       - paths=source_relative
@@ -34,7 +38,7 @@ plugins:
       - allow_patch_feature=false
 
   # OpenAPI v2
-  - plugin: openapiv2
+  - local: ["go", "tool", "protoc-gen-openapiv2"]
     out: api
     opt:
       - allow_merge=true
@@ -53,7 +57,7 @@ plugins:
       # message name as the schema name for HTTP request bodies. When the
       # proto message has a path-parameter field that grpc-gateway lifts
       # out of `body: "*"` (e.g. `RevokeAPIKeyRequest.key_id` is bound to
-      # the URL), the synthesised body is anonymous and named
+      # the URL), the synthesized body is anonymous and named
       # `{MethodName}Body` automatically (`AdminRevokeAPIKeyBody`,
       # `AdminRotateIssuedAPIKeyBody`). When the proto message has no
       # URL-bound field, the body schema inherits the proto message name

@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 )
@@ -345,13 +346,13 @@ func simpleDiff(expected, actual string) string {
 		}
 		if eLine != aLine {
 			if i < len(expectedLines) {
-				fmt.Fprintf(&buf, "  -%s\n", eLine)
+				_, _ = fmt.Fprintf(&buf, "  -%s\n", eLine)
 			}
 			if i < len(actualLines) {
-				fmt.Fprintf(&buf, "  +%s\n", aLine)
+				_, _ = fmt.Fprintf(&buf, "  +%s\n", aLine)
 			}
 		} else {
-			fmt.Fprintf(&buf, "   %s\n", eLine)
+			_, _ = fmt.Fprintf(&buf, "   %s\n", eLine)
 		}
 	}
 	return buf.String()
@@ -430,8 +431,7 @@ func syncMarkdownFile(path string) (int, error) {
 	}
 
 	// Apply replacements from bottom to top
-	for i := len(replacements) - 1; i >= 0; i-- {
-		r := replacements[i]
+	for _, r := range slices.Backward(replacements) {
 		newLines := strings.Split(r.newCode, "\n")
 		// Replace lines[codeStart:codeEnd] with newLines
 		head := lines[:r.codeStart]

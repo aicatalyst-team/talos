@@ -138,7 +138,7 @@ func TestImportAPIKey(t *testing.T) {
 				}
 			},
 			wantErr:     true,
-			errContains: "raw_key: value length must be at least 1",
+			errContains: "raw_key: must be at least 1 characters",
 		},
 		{
 			name:   "error - empty name",
@@ -153,7 +153,7 @@ func TestImportAPIKey(t *testing.T) {
 				}
 			},
 			wantErr:     true,
-			errContains: "name: value length must be at least 1",
+			errContains: "name: must be at least 1 characters",
 		},
 	}
 

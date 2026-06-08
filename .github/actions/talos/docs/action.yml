@@ -46,12 +46,6 @@ runs:
           ${{ inputs.cache-version }}-tools-${{ runner.os }}-${{
           hashFiles('Makefile') }}
 
-    - name: Install tools
-      if: steps.cache-generated.outputs.cache-hit != 'true'
-      shell: bash
-      working-directory: .
-      run: make tools
-
     - name: Setup Node.js
       uses: actions/setup-node@v6
       with:

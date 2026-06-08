@@ -108,7 +108,7 @@ func TestIssueAPIKey(t *testing.T) {
 				ActorId: "user-123",
 			},
 			wantErr:     true,
-			errContains: "name: value length must be at least 1",
+			errContains: "name: must be at least 1 characters",
 		},
 		{
 			name: "error - missing actor_id",
@@ -116,7 +116,7 @@ func TestIssueAPIKey(t *testing.T) {
 				Name: "Test Key",
 			},
 			wantErr:     true,
-			errContains: "actor_id: value length must be at least 1",
+			errContains: "actor_id: must be at least 1 characters",
 		},
 		{
 			name: "success - empty scopes array",
@@ -200,7 +200,7 @@ func TestGetIssuedAPIKey(t *testing.T) {
 			name:        "error - empty key ID",
 			keyID:       "",
 			wantErr:     true,
-			errContains: "key_id: value length must be at least 1",
+			errContains: "key_id: must be at least 1 characters",
 		},
 	}
 
@@ -395,7 +395,7 @@ func TestRevokeIssuedAPIKey(t *testing.T) {
 			keyID:       "",
 			reason:      talosv2alpha1.RevocationReason_REVOCATION_REASON_KEY_COMPROMISE,
 			wantErr:     true,
-			errContains: "key_id: value length must be at least 1",
+			errContains: "key_id: must be at least 1 characters",
 		},
 	}
 

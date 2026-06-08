@@ -41,13 +41,13 @@ type Schema struct {
 func main() {
 	data, err := os.ReadFile("spec/config.schema.json")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading schema: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Error reading schema: %v\n", err)
 		os.Exit(1)
 	}
 
 	var schema Schema
 	if err := json.Unmarshal(data, &schema); err != nil {
-		fmt.Fprintf(os.Stderr, "Error parsing schema: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Error parsing schema: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -127,7 +127,7 @@ func printSection(prefix string, s Schema, depth int) {
 	fmt.Printf("%s `%s`%s\n\n", heading, prefix, badges)
 
 	if s.Description != "" {
-		desc := strings.Split(s.Description, ". ")[0]
+		desc, _, _ := strings.Cut(s.Description, ". ")
 		fmt.Printf("%s.\n\n", strings.TrimSuffix(desc, "."))
 	}
 

@@ -40,8 +40,7 @@ For a complete, runnable program that exercises every operation shown below, see
 <!-- doctest:exec -->
 
 ```shell
-go build -o .bin/doctest-go-sdk ./tools/doctest/examples/go_sdk
-./.bin/doctest-go-sdk
+go run ./tools/doctest/examples/go_sdk
 ```
 
 ## Initialize the client

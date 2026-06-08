@@ -4,9 +4,6 @@ inputs:
   go-version-file:
     description: Path to go.mod for version detection
     default: "go.mod"
-  golangci-lint-version:
-    description: golangci-lint version
-    default: "v2.10.1"
   cache-version:
     description: Cache version; bump to invalidate all caches
     default: "v6"
@@ -17,7 +14,6 @@ runs:
       uses: ./.github/actions/talos/setup-go
       with:
         go-version-file: ${{ inputs.go-version-file }}
-        golangci-lint-version: ${{ inputs.golangci-lint-version }}
         cache-version: ${{ inputs.cache-version }}
 
     - name: Check formatting drift
@@ -28,7 +24,6 @@ runs:
     - name: Run golangci-lint
       uses: golangci/golangci-lint-action@v9
       with:
-        version: ${{ inputs.golangci-lint-version }}
         install-mode: "none"
         working-directory: .
         args: --timeout=5m
