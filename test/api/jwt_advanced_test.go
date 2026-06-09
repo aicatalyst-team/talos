@@ -20,35 +20,25 @@ func (s *APIKeyE2ETestSuite) TestGetJWKS() {
 
 	s.Run("get JWKS", func() {
 		jwksResp := s.sdkGetJWKS(ctx)
-		s.NotNil(jwksResp.Jwks)
+		s.Require().NotNil(jwksResp.Jwks)
 
-		// Parse JWKS as map
-		jwksMap := jwksResp.Jwks
-		s.Contains(jwksMap, "keys", "JWKS should contain 'keys' field")
-
-		// Verify keys array exists and has entries
-		keys, ok := jwksMap["keys"].([]any)
-		s.True(ok, "keys should be an array")
+		// Verify keys array exists and has entries.
+		keys := jwksResp.Jwks.Keys
 		s.Require().NotEmpty(keys, "JWKS should contain at least one key")
 
-		// Verify first key has required fields
-		firstKey, ok := keys[0].(map[string]any)
-		s.True(ok, "key should be an object")
-		s.Contains(firstKey, "kid", "key should have kid")
-		s.Contains(firstKey, "kty", "key should have kty")
-		s.Contains(firstKey, "use", "key should have use")
-		s.Contains(firstKey, "alg", "key should have alg")
+		// Verify first key has required fields.
+		firstKey := keys[0]
+		s.NotEmpty(firstKey.Kid, "key should have kid")
+		s.NotEmpty(firstKey.Kty, "key should have kty")
+		s.NotNil(firstKey.Use, "key should have use")
+		s.NotNil(firstKey.Alg, "key should have alg")
 	})
 
 	s.Run("get JWKS via HTTP well-known endpoint", func() {
 		jwksResp := s.sdkGetJWKS(ctx)
-		s.NotNil(jwksResp.Jwks)
+		s.Require().NotNil(jwksResp.Jwks)
 
-		jwksMap := jwksResp.Jwks
-		s.Contains(jwksMap, "keys", "JWKS should contain 'keys' field")
-
-		keys, ok := jwksMap["keys"].([]any)
-		s.True(ok, "keys should be an array")
+		keys := jwksResp.Jwks.Keys
 		s.NotEmpty(keys, "JWKS should contain signing keys")
 	})
 
@@ -73,13 +63,11 @@ func (s *APIKeyE2ETestSuite) TestGetJWKS() {
 
 		// JWKS should contain the signing key
 		jwksResp := s.sdkGetJWKS(ctx)
-		keys, _ := jwksResp.Jwks["keys"].([]any)
 		kid := header["kid"]
 
 		found := false
-		for _, k := range keys {
-			key, _ := k.(map[string]any)
-			if key["kid"] == kid {
+		for _, key := range jwksResp.Jwks.Keys {
+			if key.Kid == kid {
 				found = true
 				break
 			}
@@ -89,31 +77,27 @@ func (s *APIKeyE2ETestSuite) TestGetJWKS() {
 
 	s.Run("JWKS contains active signing keys", func() {
 		jwksResp := s.sdkGetJWKS(ctx)
-		jwksMap := jwksResp.Jwks
-		keys, _ := jwksMap["keys"].([]any)
 
-		for _, k := range keys {
-			key, _ := k.(map[string]any)
-			s.NotEmpty(key["kid"], "kid should not be empty")
-			s.NotEmpty(key["kty"], "kty should not be empty")
+		for _, key := range jwksResp.Jwks.Keys {
+			s.NotEmpty(key.Kid, "kid should not be empty")
+			s.NotEmpty(key.Kty, "kty should not be empty")
 
-			// Public key material should be present
-			// For EdDSA: x field, For RSA: n and e fields
-			hasPublicKey := key["x"] != nil || (key["n"] != nil && key["e"] != nil)
+			// Public key material should be present.
+			// For EdDSA: x field, for RSA: n and e fields.
+			hasPublicKey := key.X != nil || (key.N != nil && key.E != nil)
 			s.True(hasPublicKey, "Key should have public key material")
 		}
 	})
 
 	s.Run("HMAC secrets are never exposed in JWKS", func() {
 		jwksResp := s.sdkGetJWKS(ctx)
-		keys, _ := jwksResp.Jwks["keys"].([]any)
+		keys := jwksResp.Jwks.Keys
 		s.NotEmpty(keys, "JWKS should contain at least one key")
 
-		for _, k := range keys {
-			key, _ := k.(map[string]any)
-			s.NotEqual("oct", key["kty"], "JWKS must not contain symmetric (oct) keys")
-			s.NotContains(key, "k", "JWKS must not expose raw symmetric key material (k field)")
-			alg, _ := key["alg"].(string)
+		for _, key := range keys {
+			s.NotEqual("oct", key.Kty, "JWKS must not contain symmetric (oct) keys")
+			s.NotContains(key.AdditionalProperties, "k", "JWKS must not expose raw symmetric key material (k field)")
+			alg := key.GetAlg()
 			s.False(strings.HasPrefix(alg, "HS"), "JWKS must not contain HMAC algorithms (got alg=%q)", alg)
 		}
 	})
@@ -582,12 +566,10 @@ func (s *APIKeyE2ETestSuite) TestHMACSecretNonExposure() {
 			"JWKS response must not contain the HMAC secret")
 
 		// Verify JWKS has no symmetric key types.
-		keys, _ := jwksResp.Jwks["keys"].([]any)
-		for _, k := range keys {
-			key, _ := k.(map[string]any)
-			s.NotEqual("oct", key["kty"],
+		for _, key := range jwksResp.Jwks.Keys {
+			s.NotEqual("oct", key.Kty,
 				"JWKS must not contain symmetric (oct) key types")
-			s.NotContains(key, "k",
+			s.NotContains(key.AdditionalProperties, "k",
 				"JWKS must not expose raw symmetric key material")
 		}
 	})
@@ -830,13 +812,10 @@ func (s *APIKeyE2ETestSuite) TestJWTKidHintRoutesToExpectedKey() {
 	header := decodeJWTHeader(s.T(), tokenResp.Token.GetToken())
 
 	jwksResp := s.sdkGetJWKS(ctx)
-	keys, ok := jwksResp.Jwks["keys"].([]any)
-	s.Require().True(ok, "JWKS keys must be an array")
+	keys := jwksResp.Jwks.Keys
 	s.Require().Len(keys, 1, "default test server must expose exactly one signing key")
 
-	only, ok := keys[0].(map[string]any)
-	s.Require().True(ok, "JWKS entry must be a JSON object")
-	s.Equal(only["kid"], header["kid"], "JWT header kid must equal the sole JWKS kid")
+	s.Equal(keys[0].Kid, header["kid"], "JWT header kid must equal the sole JWKS kid")
 }
 
 // TestJWTKidHintSelectsConfiguredKey is the regression guard for the

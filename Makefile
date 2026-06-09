@@ -99,11 +99,15 @@ fmt-check-prettier:
 	@npx prettier@$(PRETTIER_VERSION) --check "**/*.{js,jsx,ts,tsx,md,mdx}" --log-level warn
 
 .PHONY: generate-openapi
-generate-openapi: .bin/ory ## Rename generated OpenAPI v2 spec and produce OpenAPI v3 spec
+generate-openapi: .bin/ory ## Rename generated OpenAPI v2 spec and produce OpenAPI v3 spec with patches applied
 	@echo "Renaming OpenAPI v2 spec..."
 	@mv api/talos.swagger.json api/talos.openapi-v2.json
-	@echo "Generating OpenAPI v3 spec..."
-	@.bin/ory dev openapi migrate api/talos.openapi-v2.json api/talos.openapi-v3.json
+	@echo "Generating OpenAPI v3 spec and applying patches..."
+	@.bin/ory dev openapi migrate \
+		-p file://.schema/openapi/patches/responses.yaml \
+		-p file://.schema/openapi/patches/jwks.yaml \
+		api/talos.openapi-v2.json api/talos.openapi-v3.json
+	@printf '\n' >> api/talos.openapi-v3.json
 
 .PHONY: generate-sdk
 generate-sdk: ## Generate Go HTTP client from OpenAPI spec
@@ -123,7 +127,7 @@ generate-sdk: ## Generate Go HTTP client from OpenAPI spec
 generate: ## Generate code (proto, sqlc, client, docs, cli docs, ts client)
 	@echo "Generating protobuf code and API documentation..."
 	@go tool buf generate
-	@echo "Post-processing OpenAPI specs..."
+	@echo "Migrating OpenAPI spec to v3 and applying patches..."
 	@$(MAKE) generate-openapi
 	@echo "Generating HTTP SDKs..."
 	@$(MAKE) generate-sdk

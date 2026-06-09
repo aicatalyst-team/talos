@@ -197,7 +197,7 @@
       },
       "post": {
         "summary": "Import API Key",
-        "description": "Imports an external API key into the system. Allows importing keys from\nlegacy systems or external providers. The raw key is hashed and stored\nsecurely (HMAC). Imported keys support token derivation (JWT/Macaroon)\nlike issued keys.\n\n```http\nPOST /v2alpha1/admin/importedApiKeys\n{\n  \"raw_key\": \"sk_live_abc123xyz\",\n  \"name\": \"Imported Stripe Key\",\n  \"actor_id\": \"user_123\"\n}\n```",
+        "description": "Imports an external API key into the system. Allows importing keys from\nlegacy systems or external providers. The raw key is hashed and stored\nsecurely (HMAC). Imported keys support token derivation (JWT/Macaroon)\nlike issued keys.\n\n```http\nPOST /v2alpha1/admin/importedApiKeys\n{\n  \"raw_key\": \"imported-key-EXAMPLE-not-a-real-secret\",\n  \"name\": \"Example imported key\",\n  \"actor_id\": \"user_123\"\n}\n```",
         "operationId": "adminImportApiKey",
         "responses": {
           "200": {
@@ -220,7 +220,7 @@
         "parameters": [
           {
             "name": "body",
-            "description": "Example:\n  {\n    \"raw_key\": \"sk_live_abc123xyz789\",\n    \"name\": \"Stripe Production Key\",\n    \"actor_id\": \"payment-processor\",\n    \"scopes\": [\"read\", \"write\"],\n    \"ttl\": \"8760h\",  // 1 year (also accepts: 31536000s)\n    \"metadata\": {\"source\": \"stripe\", \"environment\": \"production\"}\n  }",
+            "description": "Example:\n  {\n    \"raw_key\": \"imported-key-EXAMPLE-not-a-real-secret\",\n    \"name\": \"Example imported key\",\n    \"actor_id\": \"payment-processor\",\n    \"scopes\": [\"read\", \"write\"],\n    \"ttl\": \"8760h\",  // 1 year (also accepts: 31536000s)\n    \"metadata\": {\"source\": \"example-provider\", \"environment\": \"staging\"}\n  }",
             "in": "body",
             "required": true,
             "schema": {
@@ -1119,7 +1119,7 @@
           "$ref": "#/definitions/KeyVisibility"
         }
       },
-      "description": "Example:\n  {\n    \"raw_key\": \"sk_live_abc123xyz789\",\n    \"name\": \"Stripe Production Key\",\n    \"actor_id\": \"payment-processor\",\n    \"scopes\": [\"read\", \"write\"],\n    \"ttl\": \"8760h\",  // 1 year (also accepts: 31536000s)\n    \"metadata\": {\"source\": \"stripe\", \"environment\": \"production\"}\n  }",
+      "description": "Example:\n  {\n    \"raw_key\": \"imported-key-EXAMPLE-not-a-real-secret\",\n    \"name\": \"Example imported key\",\n    \"actor_id\": \"payment-processor\",\n    \"scopes\": [\"read\", \"write\"],\n    \"ttl\": \"8760h\",  // 1 year (also accepts: 31536000s)\n    \"metadata\": {\"source\": \"example-provider\", \"environment\": \"staging\"}\n  }",
       "title": "ImportApiKeyRequest imports an external HMAC-based API key"
     },
     "ImportedApiKey": {
@@ -1302,7 +1302,7 @@
         "KEY_STATUS_EXPIRED"
       ],
       "default": "KEY_STATUS_UNSPECIFIED",
-      "description": "KeyStatus represents the lifecycle state of an API key.\n\n - KEY_STATUS_UNSPECIFIED: Default zero value. Never returned by the server. Treated as ACTIVE for\nbackward compatibility but should not be relied on.\n - KEY_STATUS_ACTIVE: The key is valid and can be used to authenticate.\n - KEY_STATUS_REVOKED: The key was revoked. Verification fails with VERIFICATION_ERROR_REVOKED.\nSee revocation_reason for the cause.\n - KEY_STATUS_EXPIRED: The key passed its expire_time. Verification fails with\nVERIFICATION_ERROR_EXPIRED. The transition is computed at read time and\nnot persisted."
+      "description": "KeyStatus represents the lifecycle state of an API key.\n\n - KEY_STATUS_UNSPECIFIED: Default zero value. Never returned by the server. Treated as ACTIVE for\nbackward compatibility but should not be relied on.\n - KEY_STATUS_ACTIVE: The key is valid and can be used to authenticate.\n - KEY_STATUS_REVOKED: The key was revoked and can no longer authenticate. On the API key object,\nthe revocation_reason field carries the cause (set via the admin and\nself-revocation flows). Verification responses do not include this status:\na revoked key fails verification with error_code VERIFICATION_ERROR_REVOKED.\n - KEY_STATUS_EXPIRED: The key passed its expire_time. Verification fails with\nVERIFICATION_ERROR_EXPIRED. The transition is computed at read time and\nnot persisted."
     },
     "KeyVisibility": {
       "type": "string",

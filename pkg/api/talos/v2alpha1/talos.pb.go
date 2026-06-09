@@ -39,8 +39,10 @@ const (
 	KeyStatus_KEY_STATUS_UNSPECIFIED KeyStatus = 0
 	// The key is valid and can be used to authenticate.
 	KeyStatus_KEY_STATUS_ACTIVE KeyStatus = 1
-	// The key was revoked. Verification fails with VERIFICATION_ERROR_REVOKED.
-	// See revocation_reason for the cause.
+	// The key was revoked and can no longer authenticate. On the API key object,
+	// the revocation_reason field carries the cause (set via the admin and
+	// self-revocation flows). Verification responses do not include this status:
+	// a revoked key fails verification with error_code VERIFICATION_ERROR_REVOKED.
 	KeyStatus_KEY_STATUS_REVOKED KeyStatus = 2
 	// The key passed its expire_time. Verification fails with
 	// VERIFICATION_ERROR_EXPIRED. The transition is computed at read time and
@@ -1500,12 +1502,12 @@ func (x *RotateIssuedApiKeyResponse) GetOldIssuedApiKey() *IssuedApiKey {
 // Example:
 //
 //	{
-//	  "raw_key": "sk_live_abc123xyz789",
-//	  "name": "Stripe Production Key",
+//	  "raw_key": "imported-key-EXAMPLE-not-a-real-secret",
+//	  "name": "Example imported key",
 //	  "actor_id": "payment-processor",
 //	  "scopes": ["read", "write"],
 //	  "ttl": "8760h",  // 1 year (also accepts: 31536000s)
-//	  "metadata": {"source": "stripe", "environment": "production"}
+//	  "metadata": {"source": "example-provider", "environment": "staging"}
 //	}
 type ImportApiKeyRequest struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`

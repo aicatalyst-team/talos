@@ -17,7 +17,7 @@ import (
 // checks if the ImportApiKeyRequest type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &ImportApiKeyRequest{}
 
-// ImportApiKeyRequest Example:   {     \"raw_key\": \"sk_live_abc123xyz789\",     \"name\": \"Stripe Production Key\",     \"actor_id\": \"payment-processor\",     \"scopes\": [\"read\", \"write\"],     \"ttl\": \"8760h\",  // 1 year (also accepts: 31536000s)     \"metadata\": {\"source\": \"stripe\", \"environment\": \"production\"}   }
+// ImportApiKeyRequest Example:   {     \"raw_key\": \"imported-key-EXAMPLE-not-a-real-secret\",     \"name\": \"Example imported key\",     \"actor_id\": \"payment-processor\",     \"scopes\": [\"read\", \"write\"],     \"ttl\": \"8760h\",  // 1 year (also accepts: 31536000s)     \"metadata\": {\"source\": \"example-provider\", \"environment\": \"staging\"}   }
 type ImportApiKeyRequest struct {
 	// actor_id is the identifier of the entity that owns this imported key. Required so every imported key is traceable to an actor for revocation and audit queries.
 	ActorId       *string        `json:"actor_id,omitempty"`

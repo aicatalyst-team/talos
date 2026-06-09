@@ -175,8 +175,8 @@ type ApiKeysAPI interface {
 		```http
 		POST /v2alpha1/admin/importedApiKeys
 		{
-		  "raw_key": "sk_live_abc123xyz",
-		  "name": "Imported Stripe Key",
+		  "raw_key": "imported-key-EXAMPLE-not-a-real-secret",
+		  "name": "Example imported key",
 		  "actor_id": "user_123"
 		}
 		```
@@ -1262,7 +1262,7 @@ type ApiKeysAPIAdminImportApiKeyRequest struct {
 	importApiKeyRequest *ImportApiKeyRequest
 }
 
-// Example:   {     \&quot;raw_key\&quot;: \&quot;sk_live_abc123xyz789\&quot;,     \&quot;name\&quot;: \&quot;Stripe Production Key\&quot;,     \&quot;actor_id\&quot;: \&quot;payment-processor\&quot;,     \&quot;scopes\&quot;: [\&quot;read\&quot;, \&quot;write\&quot;],     \&quot;ttl\&quot;: \&quot;8760h\&quot;,  // 1 year (also accepts: 31536000s)     \&quot;metadata\&quot;: {\&quot;source\&quot;: \&quot;stripe\&quot;, \&quot;environment\&quot;: \&quot;production\&quot;}   }
+// Example:   {     \&quot;raw_key\&quot;: \&quot;imported-key-EXAMPLE-not-a-real-secret\&quot;,     \&quot;name\&quot;: \&quot;Example imported key\&quot;,     \&quot;actor_id\&quot;: \&quot;payment-processor\&quot;,     \&quot;scopes\&quot;: [\&quot;read\&quot;, \&quot;write\&quot;],     \&quot;ttl\&quot;: \&quot;8760h\&quot;,  // 1 year (also accepts: 31536000s)     \&quot;metadata\&quot;: {\&quot;source\&quot;: \&quot;example-provider\&quot;, \&quot;environment\&quot;: \&quot;staging\&quot;}   }
 func (r ApiKeysAPIAdminImportApiKeyRequest) ImportApiKeyRequest(importApiKeyRequest ImportApiKeyRequest) ApiKeysAPIAdminImportApiKeyRequest {
 	r.importApiKeyRequest = &importApiKeyRequest
 	return r
@@ -1284,8 +1284,8 @@ like issued keys.
 POST /v2alpha1/admin/importedApiKeys
 
 	{
-	  "raw_key": "sk_live_abc123xyz",
-	  "name": "Imported Stripe Key",
+	  "raw_key": "imported-key-EXAMPLE-not-a-real-secret",
+	  "name": "Example imported key",
 	  "actor_id": "user_123"
 	}
 

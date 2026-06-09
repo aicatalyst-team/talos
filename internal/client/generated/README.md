@@ -131,6 +131,8 @@ Class | Method | HTTP request | Description
  - [DeriveTokenRequest](docs/DeriveTokenRequest.md)
  - [DeriveTokenResponse](docs/DeriveTokenResponse.md)
  - [GetJWKSResponse](docs/GetJWKSResponse.md)
+ - [GetJWKSResponseJwks](docs/GetJWKSResponseJwks.md)
+ - [GetJWKSResponseJwksKeysInner](docs/GetJWKSResponseJwksKeysInner.md)
  - [IPRestriction](docs/IPRestriction.md)
  - [ImportApiKeyRequest](docs/ImportApiKeyRequest.md)
  - [ImportedApiKey](docs/ImportedApiKey.md)

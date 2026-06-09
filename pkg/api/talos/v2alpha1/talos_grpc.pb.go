@@ -165,8 +165,8 @@ type ApiKeysClient interface {
 	// POST /v2alpha1/admin/importedApiKeys
 	//
 	//	{
-	//	  "raw_key": "sk_live_abc123xyz",
-	//	  "name": "Imported Stripe Key",
+	//	  "raw_key": "imported-key-EXAMPLE-not-a-real-secret",
+	//	  "name": "Example imported key",
 	//	  "actor_id": "user_123"
 	//	}
 	//
@@ -663,8 +663,8 @@ type ApiKeysServer interface {
 	// POST /v2alpha1/admin/importedApiKeys
 	//
 	//	{
-	//	  "raw_key": "sk_live_abc123xyz",
-	//	  "name": "Imported Stripe Key",
+	//	  "raw_key": "imported-key-EXAMPLE-not-a-real-secret",
+	//	  "name": "Example imported key",
 	//	  "actor_id": "user_123"
 	//	}
 	//

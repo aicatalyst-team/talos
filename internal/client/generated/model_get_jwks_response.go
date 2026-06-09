@@ -19,8 +19,7 @@ var _ MappedNullable = &GetJWKSResponse{}
 
 // GetJWKSResponse struct for GetJWKSResponse
 type GetJWKSResponse struct {
-	// jwks is a JSON Web Key Set (RFC 7517). Always contains a single top-level field \"keys\" whose value is an array of JWK objects. Each JWK has at minimum a \"kty\" (key type), \"kid\" (key ID), and key-type-specific material (e.g., \"x\" and \"crv\" for OKP/Ed25519, \"n\" and \"e\" for RSA).
-	Jwks                 map[string]interface{} `json:"jwks,omitempty"`
+	Jwks                 *GetJWKSResponseJwks `json:"jwks,omitempty"`
 	AdditionalProperties map[string]interface{}
 }
 
@@ -44,19 +43,19 @@ func NewGetJWKSResponseWithDefaults() *GetJWKSResponse {
 }
 
 // GetJwks returns the Jwks field value if set, zero value otherwise.
-func (o *GetJWKSResponse) GetJwks() map[string]interface{} {
+func (o *GetJWKSResponse) GetJwks() GetJWKSResponseJwks {
 	if o == nil || IsNil(o.Jwks) {
-		var ret map[string]interface{}
+		var ret GetJWKSResponseJwks
 		return ret
 	}
-	return o.Jwks
+	return *o.Jwks
 }
 
 // GetJwksOk returns a tuple with the Jwks field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *GetJWKSResponse) GetJwksOk() (map[string]interface{}, bool) {
+func (o *GetJWKSResponse) GetJwksOk() (*GetJWKSResponseJwks, bool) {
 	if o == nil || IsNil(o.Jwks) {
-		return map[string]interface{}{}, false
+		return nil, false
 	}
 	return o.Jwks, true
 }
@@ -70,9 +69,9 @@ func (o *GetJWKSResponse) HasJwks() bool {
 	return false
 }
 
-// SetJwks gets a reference to the given map[string]interface{} and assigns it to the Jwks field.
-func (o *GetJWKSResponse) SetJwks(v map[string]interface{}) {
-	o.Jwks = v
+// SetJwks gets a reference to the given GetJWKSResponseJwks and assigns it to the Jwks field.
+func (o *GetJWKSResponse) SetJwks(v GetJWKSResponseJwks) {
+	o.Jwks = &v
 }
 
 func (o GetJWKSResponse) MarshalJSON() ([]byte, error) {
