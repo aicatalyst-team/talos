@@ -3,8 +3,11 @@ package cmd
 import (
 	"cmp"
 	"fmt"
+	"io"
+	"io/fs"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/golang-migrate/migrate/v4"
@@ -68,33 +71,46 @@ The database connection string can be provided via:
 				return err
 			}
 
-			m, err := newMigrate(dbDSN)
+			m, driverName, err := newMigrate(dbDSN)
 			if err != nil {
 				return errors.Wrap(err, "initialize migrations")
 			}
 			defer m.Close()
+			m.Log = migrateLogger{w: cmd.ErrOrStderr()}
 
-			// Get current version before migration
+			out := cmd.ErrOrStderr()
+
+			// Get current version before migration. A fresh database reports
+			// ErrNilVersion, which is expected and not an error here.
 			version, dirty, err := m.Version()
-			if err != nil && !errors.Is(err, migrate.ErrNilVersion) {
+			fresh := errors.Is(err, migrate.ErrNilVersion)
+			if err != nil && !fresh {
 				return errors.Wrap(err, "get current version")
 			}
 
 			// Check if database is dirty
 			if dirty {
-				_, _ = fmt.Fprintf(os.Stderr, "Error: Database is in dirty state at version %d\n", version)
-				_, _ = fmt.Fprintf(os.Stderr, "Run 'talos migrate force <version>' to resolve this\n")
+				_, _ = fmt.Fprintf(out, "Error: Database is in dirty state at version %d\n", version)
+				_, _ = fmt.Fprintf(out, "Run 'talos migrate force <version>' to resolve this\n")
 				return cmdx.FailSilently(cmd)
 			}
 
+			if fresh {
+				_, _ = fmt.Fprintf(out, "Running migrations on %s database (database not initialized)\n", driverName)
+			} else {
+				_, _ = fmt.Fprintf(out, "Running migrations on %s database (current version: %d)\n", driverName, version)
+			}
+
 			// Run migrations
+			start := time.Now()
 			if err := m.Up(); err != nil {
 				if errors.Is(err, migrate.ErrNoChange) {
-					_, _ = fmt.Fprintf(os.Stderr, "No migrations to run (current version: %d)\n", version)
+					_, _ = fmt.Fprintf(out, "No migrations to run (current version: %d)\n", version)
 					return nil
 				}
 				return errors.Wrap(err, "migration failed")
 			}
+			elapsed := time.Since(start).Round(time.Millisecond)
 
 			// Get new version
 			newVersion, _, err := m.Version()
@@ -102,7 +118,11 @@ The database connection string can be provided via:
 				return errors.Wrap(err, "get new version")
 			}
 
-			_, _ = fmt.Fprintf(os.Stderr, "Successfully migrated from version %d to %d\n", version, newVersion)
+			if fresh {
+				_, _ = fmt.Fprintf(out, "Successfully migrated to version %d in %s\n", newVersion, elapsed)
+			} else {
+				_, _ = fmt.Fprintf(out, "Successfully migrated from version %d to %d in %s\n", version, newVersion, elapsed)
+			}
 			return nil
 		},
 	}
@@ -144,17 +164,20 @@ In production, use this carefully and ensure you have backups.`,
 				return err
 			}
 
-			m, err := newMigrate(dbDSN)
+			m, driverName, err := newMigrate(dbDSN)
 			if err != nil {
 				return errors.Wrap(err, "initialize migrations")
 			}
 			defer m.Close()
+			m.Log = migrateLogger{w: cmd.ErrOrStderr()}
+
+			out := cmd.ErrOrStderr()
 
 			// Get current version
 			version, dirty, err := m.Version()
 			if err != nil {
 				if errors.Is(err, migrate.ErrNilVersion) {
-					_, _ = fmt.Fprintf(os.Stderr, "No migrations to roll back (database not initialized)\n")
+					_, _ = fmt.Fprintf(out, "No migrations to roll back (database not initialized)\n")
 					return nil
 				}
 				return errors.Wrap(err, "get current version")
@@ -162,19 +185,21 @@ In production, use this carefully and ensure you have backups.`,
 
 			// Check if database is dirty
 			if dirty {
-				_, _ = fmt.Fprintf(os.Stderr, "Error: Database is in dirty state at version %d\n", version)
-				_, _ = fmt.Fprintf(os.Stderr, "Run 'talos migrate force <version>' to resolve this\n")
+				_, _ = fmt.Fprintf(out, "Error: Database is in dirty state at version %d\n", version)
+				_, _ = fmt.Fprintf(out, "Run 'talos migrate force <version>' to resolve this\n")
 				return cmdx.FailSilently(cmd)
 			}
 
 			// Roll back steps
+			start := time.Now()
 			if err := m.Steps(-steps); err != nil {
 				if errors.Is(err, migrate.ErrNoChange) {
-					_, _ = fmt.Fprintf(os.Stderr, "No migrations to roll back (current version: %d)\n", version)
+					_, _ = fmt.Fprintf(out, "No migrations to roll back (current version: %d)\n", version)
 					return nil
 				}
 				return errors.Wrap(err, "migration rollback failed")
 			}
+			elapsed := time.Since(start).Round(time.Millisecond)
 
 			// Get new version
 			newVersion, _, err := m.Version()
@@ -183,9 +208,9 @@ In production, use this carefully and ensure you have backups.`,
 			}
 
 			if errors.Is(err, migrate.ErrNilVersion) {
-				_, _ = fmt.Fprintf(os.Stderr, "Successfully rolled back all migrations (database empty)\n")
+				_, _ = fmt.Fprintf(out, "Successfully rolled back all migrations on %s database (database empty) in %s\n", driverName, elapsed)
 			} else {
-				_, _ = fmt.Fprintf(os.Stderr, "Successfully rolled back from version %d to %d\n", version, newVersion)
+				_, _ = fmt.Fprintf(out, "Successfully rolled back on %s database from version %d to %d in %s\n", driverName, version, newVersion, elapsed)
 			}
 			return nil
 		},
@@ -211,23 +236,32 @@ Shows:
   - Whether the database is in a dirty state
   - Database connection info`,
 		SilenceUsage: true,
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			dbDSN, err := getDatabaseDSN(database)
 			if err != nil {
 				return err
 			}
 
-			m, err := newMigrate(dbDSN)
+			m, driverName, err := newMigrate(dbDSN)
 			if err != nil {
 				return errors.Wrap(err, "initialize migrations")
 			}
 			defer m.Close()
 
+			out := cmd.ErrOrStderr()
+
+			latest, err := latestAvailableVersion(dbDSN)
+			if err != nil {
+				return errors.Wrap(err, "determine latest available migration")
+			}
+
 			// Get current version
 			version, dirty, err := m.Version()
 			if err != nil {
 				if errors.Is(err, migrate.ErrNilVersion) {
-					_, _ = fmt.Fprintf(os.Stderr, "Database Status: Not initialized (no migrations applied)\n")
+					_, _ = fmt.Fprintf(out, "Database Status: Not initialized (no migrations applied)\n")
+					_, _ = fmt.Fprintf(out, "Database Driver: %s\n", driverName)
+					_, _ = fmt.Fprintf(out, "Latest Available: %d (%d pending)\n", latest, latest)
 					return nil
 				}
 				return errors.Wrap(err, "get version")
@@ -239,13 +273,20 @@ Shows:
 				status = "DIRTY"
 			}
 
-			_, _ = fmt.Fprintf(os.Stderr, "Database Status: %s\n", status)
-			_, _ = fmt.Fprintf(os.Stderr, "Current Version: %d\n", version)
+			var pending uint
+			if latest > version {
+				pending = latest - version
+			}
+
+			_, _ = fmt.Fprintf(out, "Database Status: %s\n", status)
+			_, _ = fmt.Fprintf(out, "Database Driver: %s\n", driverName)
+			_, _ = fmt.Fprintf(out, "Current Version: %d\n", version)
+			_, _ = fmt.Fprintf(out, "Latest Available: %d (%d pending)\n", latest, pending)
 
 			if dirty {
-				_, _ = fmt.Fprintf(os.Stderr, "\nWARNING: Database is in dirty state!\n")
-				_, _ = fmt.Fprintf(os.Stderr, "This usually means a migration failed mid-execution.\n")
-				_, _ = fmt.Fprintf(os.Stderr, "Run 'talos migrate force %d' to mark it as resolved.\n", version)
+				_, _ = fmt.Fprintf(out, "\nWARNING: Database is in dirty state!\n")
+				_, _ = fmt.Fprintf(out, "This usually means a migration failed mid-execution.\n")
+				_, _ = fmt.Fprintf(out, "Run 'talos migrate force %d' to mark it as resolved.\n", version)
 			}
 
 			return nil
@@ -277,7 +318,7 @@ inconsistent database state if used incorrectly.`,
   {{ .CommandPath }} 5`,
 		Args:         cobra.ExactArgs(1),
 		SilenceUsage: true,
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			var targetVersion int
 			if _, err := fmt.Sscanf(args[0], "%d", &targetVersion); err != nil {
 				return errors.Errorf("invalid version: %s (must be an integer)", args[0])
@@ -288,19 +329,21 @@ inconsistent database state if used incorrectly.`,
 				return err
 			}
 
-			m, err := newMigrate(dbDSN)
+			m, _, err := newMigrate(dbDSN)
 			if err != nil {
 				return errors.Wrap(err, "initialize migrations")
 			}
 			defer m.Close()
+
+			out := cmd.ErrOrStderr()
 
 			// Force version
 			if err := m.Force(targetVersion); err != nil {
 				return errors.Wrap(err, "force version")
 			}
 
-			_, _ = fmt.Fprintf(os.Stderr, "Successfully forced migration version to %d\n", targetVersion)
-			_, _ = fmt.Fprintf(os.Stderr, "Database is now marked as clean\n")
+			_, _ = fmt.Fprintf(out, "Successfully forced migration version to %d\n", targetVersion)
+			_, _ = fmt.Fprintf(out, "Database is now marked as clean\n")
 			return nil
 		},
 	}
@@ -310,25 +353,34 @@ inconsistent database state if used incorrectly.`,
 	return cmd
 }
 
-// newMigrate creates a new migrate instance for the given database DSN
-func newMigrate(dbDSN string) (*migrate.Migrate, error) {
+// migrateLogger forwards golang-migrate's per-migration progress to the
+// command's error stream. With Verbose() == false, golang-migrate emits one
+// line per applied or rolled-back migration, e.g. "1/u initial_schema (3.4ms)".
+type migrateLogger struct{ w io.Writer }
+
+func (l migrateLogger) Printf(format string, v ...any) { _, _ = fmt.Fprintf(l.w, format, v...) }
+func (migrateLogger) Verbose() bool                    { return false }
+
+// newMigrate creates a new migrate instance for the given database DSN. It also
+// returns the resolved driver name (e.g. "sqlite", "postgres") so callers can
+// report which database engine the migrations ran against.
+func newMigrate(dbDSN string) (*migrate.Migrate, string, error) {
 	// Get the appropriate migrations filesystem for this database type
 	// getMigrationsFS is defined in migrate_imports_*.go based on build tags
 	migrationsFS, driverName, err := getMigrationsFS(dbDSN)
 	if err != nil {
-		return nil, errors.Wrap(err, "get migrations filesystem")
+		return nil, "", errors.Wrap(err, "get migrations filesystem")
 	}
 
 	// Create migration source from embedded FS
 	sourceDriver, err := iofs.New(migrationsFS, driverName)
 	if err != nil {
-		return nil, errors.Wrap(err, "create migration source")
+		return nil, "", errors.Wrap(err, "create migration source")
 	}
 
 	// Clean the DSN for the database driver
 	// golang-migrate expects slightly different DSN formats
 	cleanedDSN := dbDSN
-	// Check original DSN to determine database type (driverName from GetMigrationsFS is just "." for directory)
 	isSQLite := strings.HasPrefix(dbDSN, "sqlite://") || strings.HasPrefix(dbDSN, "sqlite3://") || strings.HasSuffix(dbDSN, ".db") || dbDSN == ":memory:"
 
 	var databaseURL string
@@ -358,10 +410,46 @@ func newMigrate(dbDSN string) (*migrate.Migrate, error) {
 		databaseURL,
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "create migrate instance")
+		return nil, "", errors.Wrap(err, "create migrate instance")
 	}
 
-	return m, nil
+	return m, driverName, nil
+}
+
+// latestAvailableVersion returns the highest migration version embedded for the
+// database identified by dbDSN. It returns 0 when no migrations are embedded.
+func latestAvailableVersion(dbDSN string) (uint, error) {
+	migrationsFS, driverName, err := getMigrationsFS(dbDSN)
+	if err != nil {
+		return 0, errors.Wrap(err, "get migrations filesystem")
+	}
+
+	source, err := iofs.New(migrationsFS, driverName)
+	if err != nil {
+		return 0, errors.Wrap(err, "create migration source")
+	}
+	defer source.Close()
+
+	// Walk the source from the first to the last migration. First and Next
+	// return fs.ErrNotExist once the source is exhausted.
+	version, err := source.First()
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return 0, nil
+		}
+		return 0, errors.Wrap(err, "read first migration")
+	}
+
+	for {
+		next, err := source.Next(version)
+		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				return version, nil
+			}
+			return 0, errors.Wrap(err, "read next migration")
+		}
+		version = next
+	}
 }
 
 // getDatabaseDSN gets the database DSN from the flag or environment variable.

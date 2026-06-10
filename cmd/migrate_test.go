@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"bytes"
 	"io"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -412,6 +414,58 @@ func TestMigrateDownCmd_RejectsNonPositiveSteps(t *testing.T) {
 			assert.Contains(t, err.Error(), "--steps must be a positive number")
 		})
 	}
+}
+
+// TestMigrateCmd_VerboseOutput runs the migrate subcommands against a real
+// file-based SQLite database and asserts the verbose progress output: the
+// database driver, the per-migration progress lines emitted by golang-migrate,
+// and the richer version summaries. The subtests share one database and must
+// run in order (up, up again, status, down), so this test is not parallel.
+func TestMigrateCmd_VerboseOutput(t *testing.T) {
+	dbPath := filepath.Join(t.TempDir(), "talos.db")
+	dsn := "sqlite3://" + dbPath
+
+	runCmd := func(t *testing.T, cmd *cobra.Command) string {
+		t.Helper()
+
+		var buf bytes.Buffer
+		cmd.SetArgs([]string{"--database", dsn})
+		cmd.SetOut(&buf)
+		cmd.SetErr(&buf)
+		require.NoError(t, cmd.Execute())
+		return buf.String()
+	}
+
+	t.Run("up on a fresh database reports driver, migration, and summary", func(t *testing.T) {
+		out := runCmd(t, newMigrateUpCmd())
+
+		assert.Contains(t, out, "sqlite", "should name the database driver")
+		assert.Contains(t, out, "database not initialized", "should report a fresh database")
+		assert.Contains(t, out, "initial_schema", "should log each applied migration by name")
+		assert.Contains(t, out, "Successfully migrated to version 1", "should summarize the new version")
+	})
+
+	t.Run("up again reports no pending migrations", func(t *testing.T) {
+		out := runCmd(t, newMigrateUpCmd())
+
+		assert.Contains(t, out, "No migrations to run", "should report nothing to do")
+	})
+
+	t.Run("status reports latest available version and pending count", func(t *testing.T) {
+		out := runCmd(t, newMigrateStatusCmd())
+
+		assert.Contains(t, out, "Current Version: 1")
+		assert.Contains(t, out, "Latest Available: 1")
+		assert.Contains(t, out, "0 pending")
+		assert.Contains(t, out, "sqlite", "should name the database driver")
+	})
+
+	t.Run("down logs the rolled-back migration and driver in the summary", func(t *testing.T) {
+		out := runCmd(t, newMigrateDownCmd())
+
+		assert.Contains(t, out, "1/d initial_schema", "should log the rolled-back migration")
+		assert.Contains(t, out, "sqlite", "should name the driver in the summary")
+	})
 }
 
 // TestMigrateForceCmd_ArgumentValidation tests force command argument requirements
