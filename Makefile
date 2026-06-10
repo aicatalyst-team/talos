@@ -10,6 +10,9 @@ LDFLAGS := -ldflags="-w -s -X github.com/ory/talos/internal/version.Version=$(VE
 # Tools (run from go.mod)
 OPENAPI_GENERATOR_VERSION := v2.28.0
 ORY_CLI_VERSION := v1.2.0
+# Pin prettier so fmt/fmt-check are deterministic. An unpinned `npx prettier`
+# resolves whatever version is latest at run time, so a new release could flip
+# fmt-check red with no code change.
 PRETTIER_VERSION := 3.8.3
 
 .PHONY: help
