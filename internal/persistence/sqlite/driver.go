@@ -247,16 +247,27 @@ func (d *Driver) RotateIssuedAPIKeyAtomic(ctx context.Context, oldKeyID string, 
 			return txErr
 		}
 
+		// Preserve the revocation retention window: keep the old key's expiry if it
+		// is further out than 30 days, otherwise extend it to now + 30 days.
+		newExpiresAt := sqlutil.CalculateRevocationExpiry(now, oldKey.ExpiresAt)
+
 		rotatedText := "rotated: replaced by new key"
 		txErr = qtx.RevokeIssuedAPIKey(ctx, db.RevokeIssuedAPIKeyParams{
 			RevokedStatus:        int32(talosv2alpha1.KeyStatus_KEY_STATUS_REVOKED),
 			UpdatedAt:            now,
+			ExpiresAt:            newExpiresAt,
 			RevocationReason:     int32(talosv2alpha1.RevocationReason_REVOCATION_REASON_SUPERSEDED),
 			RevocationReasonText: &rotatedText,
 			NID:                  networkID,
 			KeyID:                oldKeyID,
 		})
-		return txErr
+		if txErr != nil {
+			return txErr
+		}
+
+		// Reflect the post-revoke state in the returned old key.
+		result.OldKey.ExpiresAt = newExpiresAt
+		return nil
 	})
 
 	return result, err
