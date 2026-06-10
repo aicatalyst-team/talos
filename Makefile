@@ -172,6 +172,12 @@ generate: ## Generate code (proto, sqlc, client, docs, cli docs, ts client)
 # OSS sync manifest (monorepo-only; not synced to github.com/ory/talos)
 # ============================================================================
 
+.PHONY: update-go-modules go-mod-tidy
+update-go-modules: go-mod-tidy
+go-mod-tidy:
+	@go mod tidy
+	@$(MAKE) generate-oss-manifest
+
 .PHONY: generate-oss-manifest
 generate-oss-manifest: ## Regenerate the cloudlib-free .oss/{go.mod,go.sum} for the OSS sync
 	@bash .oss/generate.sh
