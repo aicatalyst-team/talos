@@ -222,9 +222,15 @@ In production, use this carefully and ensure you have backups.`,
 	return cmd
 }
 
+// statusPollInterval is how often 'migrate status --block' re-checks the
+// database for pending migrations. One second matches the poll interval
+// other Ory services (via popx) use for the same gate pattern.
+const statusPollInterval = time.Second
+
 // newMigrateStatusCmd creates the migrate status command
 func newMigrateStatusCmd() *cobra.Command {
 	var database string
+	var block bool
 
 	cmd := &cobra.Command{
 		Use:   "status",
@@ -233,13 +239,27 @@ func newMigrateStatusCmd() *cobra.Command {
 
 Shows:
   - Current migration version
+  - Latest migration version available in this binary
   - Whether the database is in a dirty state
-  - Database connection info`,
+
+With --block, the command polls the database every second and only returns
+once all bundled migrations have been applied. Use this to gate a rollout on
+another process (such as the primary cluster) finishing 'migrate up'.`,
+		Example: `  # Show the migration status
+  {{ .CommandPath }} --database "sqlite3://./data/talos.db"
+
+  # Block until all migrations have been applied
+  {{ .CommandPath }} --block --database "sqlite3://./data/talos.db"`,
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			dbDSN, err := getDatabaseDSN(database)
 			if err != nil {
 				return err
+			}
+
+			latest, err := latestAvailableVersion(dbDSN)
+			if err != nil {
+				return errors.Wrap(err, "determine latest available migration")
 			}
 
 			m, driverName, err := newMigrate(dbDSN)
@@ -248,54 +268,76 @@ Shows:
 			}
 			defer m.Close()
 
+			ctx := cmd.Context()
 			out := cmd.ErrOrStderr()
 
-			latest, err := latestAvailableVersion(dbDSN)
-			if err != nil {
-				return errors.Wrap(err, "determine latest available migration")
-			}
-
-			// Get current version
-			version, dirty, err := m.Version()
-			if err != nil {
-				if errors.Is(err, migrate.ErrNilVersion) {
-					_, _ = fmt.Fprintf(out, "Database Status: Not initialized (no migrations applied)\n")
-					_, _ = fmt.Fprintf(out, "Database Driver: %s\n", driverName)
-					_, _ = fmt.Fprintf(out, "Latest Available: %d (%d pending)\n", latest, latest)
+			for {
+				version, dirty, verr := m.Version()
+				if verr != nil && !errors.Is(verr, migrate.ErrNilVersion) {
+					// Fail on version read errors instead of retrying, matching
+					// popx MigrateStatus and wait-for-migrate. The init container
+					// restart provides the retry loop for transient database
+					// errors.
+					return errors.Wrap(verr, "get version")
+				}
+				initialized := verr == nil
+				// A version ahead of this binary counts as done: the gate
+				// must not block a rollout the primary already completed.
+				pending := !initialized || dirty || version < latest
+				if !block || !pending {
+					printMigrateStatus(out, driverName, initialized, version, latest, dirty)
 					return nil
 				}
-				return errors.Wrap(err, "get version")
+				if initialized {
+					_, _ = fmt.Fprintf(out, "Waiting for migrations to finish (current version: %d, dirty: %t, latest version: %d)...\n", version, dirty, latest)
+				} else {
+					_, _ = fmt.Fprintf(out, "Waiting for migrations to finish (database not initialized, latest version: %d)...\n", latest)
+				}
+
+				select {
+				case <-ctx.Done():
+					return errors.Wrap(ctx.Err(), "waiting for migrations to finish")
+				case <-time.After(statusPollInterval):
+				}
 			}
-
-			// Display status
-			status := "clean"
-			if dirty {
-				status = "DIRTY"
-			}
-
-			var pending uint
-			if latest > version {
-				pending = latest - version
-			}
-
-			_, _ = fmt.Fprintf(out, "Database Status: %s\n", status)
-			_, _ = fmt.Fprintf(out, "Database Driver: %s\n", driverName)
-			_, _ = fmt.Fprintf(out, "Current Version: %d\n", version)
-			_, _ = fmt.Fprintf(out, "Latest Available: %d (%d pending)\n", latest, pending)
-
-			if dirty {
-				_, _ = fmt.Fprintf(out, "\nWARNING: Database is in dirty state!\n")
-				_, _ = fmt.Fprintf(out, "This usually means a migration failed mid-execution.\n")
-				_, _ = fmt.Fprintf(out, "Run 'talos migrate force %d' to mark it as resolved.\n", version)
-			}
-
-			return nil
 		},
 	}
 
 	cmd.Flags().StringVar(&database, "database", "", "database DSN (overrides DB_DSN)")
+	cmd.Flags().BoolVar(&block, "block", false, "Block until all migrations have been applied")
 
 	return cmd
+}
+
+// printMigrateStatus writes the final migration status report.
+func printMigrateStatus(out io.Writer, driverName string, initialized bool, version, latest uint, dirty bool) {
+	if !initialized {
+		_, _ = fmt.Fprintf(out, "Database Status: Not initialized (no migrations applied)\n")
+		_, _ = fmt.Fprintf(out, "Database Driver: %s\n", driverName)
+		_, _ = fmt.Fprintf(out, "Latest Available: %d (%d pending)\n", latest, latest)
+		return
+	}
+
+	status := "clean"
+	if dirty {
+		status = "DIRTY"
+	}
+
+	var pending uint
+	if latest > version {
+		pending = latest - version
+	}
+
+	_, _ = fmt.Fprintf(out, "Database Status: %s\n", status)
+	_, _ = fmt.Fprintf(out, "Database Driver: %s\n", driverName)
+	_, _ = fmt.Fprintf(out, "Current Version: %d\n", version)
+	_, _ = fmt.Fprintf(out, "Latest Available: %d (%d pending)\n", latest, pending)
+
+	if dirty {
+		_, _ = fmt.Fprintf(out, "\nWARNING: Database is in dirty state!\n")
+		_, _ = fmt.Fprintf(out, "This usually means a migration failed mid-execution.\n")
+		_, _ = fmt.Fprintf(out, "Run 'talos migrate force %d' to mark it as resolved.\n", version)
+	}
 }
 
 // newMigrateForceCmd creates the migrate force command

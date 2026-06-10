@@ -191,6 +191,22 @@ func TestNewMigrateStatusCmd_Structure(t *testing.T) {
 		assert.Contains(t, longLower, "version", "should mention version information")
 		assert.Contains(t, longLower, "dirty", "should mention dirty state")
 	})
+
+	t.Run("has block flag", func(t *testing.T) {
+		t.Parallel()
+
+		flag := cmd.Flags().Lookup("block")
+		require.NotNil(t, flag, "should have --block flag")
+		assert.Equal(t, "bool", flag.Value.Type(), "block flag should be a boolean")
+		assert.Equal(t, "false", flag.DefValue, "block flag should default to false")
+		assert.NotEmpty(t, flag.Usage, "block flag should have usage text")
+	})
+
+	t.Run("long describes block", func(t *testing.T) {
+		t.Parallel()
+
+		assert.Contains(t, strings.ToLower(cmd.Long), "block", "should document the --block flag")
+	})
 }
 
 // TestNewMigrateForceCmd_Structure tests the structure of the migrate force command

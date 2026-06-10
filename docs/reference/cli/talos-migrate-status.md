@@ -21,16 +21,31 @@ Display the current database migration status.
 Shows:
 
 - Current migration version
+- Latest migration version available in this binary
 - Whether the database is in a dirty state
-- Database connection info
+
+With --block, the command polls the database every second and only returns once all bundled
+migrations have been applied. Use this to gate a rollout on another process (such as the primary
+cluster) finishing 'migrate up'.
 
 ```
 talos migrate status [flags]
 ```
 
+### Examples
+
+```
+  # Show the migration status
+  talos migrate status --database "sqlite3://./data/talos.db"
+
+  # Block until all migrations have been applied
+  talos migrate status --block --database "sqlite3://./data/talos.db"
+```
+
 ### Options
 
 ```
+      --block             Block until all migrations have been applied
       --database string   database DSN (overrides DB_DSN)
   -h, --help              help for status
 ```
