@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: talos
+  namespace: poc-talos
+  labels:
+    app: talos
+    autopoc.io/project: talos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: talos
+  template:
+    metadata:
+      labels:
+        app: talos
+    spec:
+      containers:
+        - name: talos
+          image: quay.io/aicatalyst/talos-talos:latest
+          imagePullPolicy: Always
+          args:
+            - "serve"
+            - "--config"
+            - "/etc/talos/config.yaml"
+          ports:
+            - name: api
+              containerPort: 4420
+              protocol: TCP
+            - name: metrics
+              containerPort: 4422
+              protocol: TCP
+          env:
+            - name: SECRETS_HMAC_CURRENT
+              valueFrom:
+                secretKeyRef:
+                  name: talos-secrets
+                  key: SECRETS_HMAC_CURRENT
+          volumeMounts:
+            - name: config
+              mountPath: /etc/talos
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/talos
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 4420
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health/alive
+              port: 4420
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: config
+          configMap:
+            name: talos-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: talos-data
