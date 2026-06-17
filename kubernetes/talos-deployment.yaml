@@ -16,6 +16,35 @@ spec:
       labels:
         app: talos
     spec:
+      initContainers:
+        - name: talos-migrate
+          image: quay.io/aicatalyst/talos-talos:latest
+          imagePullPolicy: Always
+          command: ["talos"]
+          args:
+            - "migrate"
+            - "up"
+            - "--database"
+            - "sqlite3:///var/lib/talos/talos.db?_journal_mode=WAL"
+          env:
+            - name: DB_DSN
+              value: "sqlite3:///var/lib/talos/talos.db?_journal_mode=WAL"
+            - name: SECRETS_HMAC_CURRENT
+              valueFrom:
+                secretKeyRef:
+                  name: talos-secrets
+                  key: SECRETS_HMAC_CURRENT
+          volumeMounts:
+            - name: config
+              mountPath: /etc/talos
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/talos
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
       containers:
         - name: talos
           image: quay.io/aicatalyst/talos-talos:latest
